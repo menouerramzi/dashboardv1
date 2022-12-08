@@ -20,6 +20,12 @@
                             <v-card-text>
                                 <v-container>
                                     <v-row>
+                                        <v-col cols="12"> 
+                                            <v-select v-model="order.api_token" :items="store.state.auth.api"
+                                                item-text="name" item-value="api_token" label="Select an option"
+                                            >
+                                            </v-select>
+                                        </v-col>
                                         <v-col cols="12" sm="6">
                                             <v-text-field v-model="order.client" :value="order.client"
                                                 label="Full Name"></v-text-field>
@@ -402,16 +408,100 @@ export default {
         if(this.editedIndex != -1){ 
 
             this.order = {}
+            this.globalProducts = []
+            this.initial()
+            this.modelAddress = []
+            this.changeAddress(-1, {})
         }
         this.editedIndex = -1
         this.DialogOrder = true
     },
+    editItem(item){ 
+        this.order = item
+        this.editedIndex = this.products.indexOf(item)
+        this.globalProducts = JSON.parse(this.order.produit_model)
+        this.modelAddress = JSON.parse(this.order.address_model)
+        this.DialogOrder = true
+    },
+
+    validationOrder(){
+        this.$axios.post('https://app.noest-dz.com/api/public/valid/order', {        
+                api_token:this.order.api_token,
+                user_guid: this.order.user_guid,
+                tracking: this.order.tracking
+                }).then(() => { 
+                    this.changeStateOrder('prossece')
+                }).catch(err => { 
+                        this.snackbar= true
+                        this.snackbarColor ='error'
+                        this.snackbarText= err
+                    })
+    },
+    deleteOrder(){ 
+        this.$axios.post('https://app.noest-dz.com/api/public/delete/order', {        
+                api_token:this.order.api_token,
+                user_guid: this.order.user_guid,
+                tracking: this.order.tracking
+                }).then(data => { 
+                    db.deleteDocument('delivered', 'orders', this.order.$id).then(()=>{
+                        this.snackbar= true
+                        this.snackbarColor ='success'
+                        this.snackbarText= 'success'
+                    }).catch(err => { 
+                        this.snackbar= true
+                        this.snackbarColor ='error'
+                        this.snackbarText= err
+                    })
+                }).catch(err => { 
+                        this.snackbar= true
+                        this.snackbarColor ='error'
+                        this.snackbarText= err
+                    })
+    },
+    changeStateOrder(state){ 
+        Object.assign(this.orders[this.editedIndex], this.order)
+        db.updateDocument('delivered', 'orders', this.order.$id,
+                    {
+                        statut:state,
+                    }).then(() => { 
+                        this.snackbar= true
+                        this.snackbarColor ='success'
+                        this.snackbarText= 'success'
+                    }).catch(err => { 
+                        this.snackbar= true
+                        this.snackbarColor ='error'
+                        this.snackbarText= err
+                    })
+    },
+
     createOrder(){ 
         const produit = this.globalProducts.map(item => item.model.map(item => item.text)+' : '+item.model[2].quantity)
             
         if (this.editedIndex > -1) {
                 Object.assign(this.orders[this.editedIndex], this.order)
-                db.updateDocument('delivered', 'orders', this.order.$id,
+                this.$axios.post('https://app.noest-dz.com/api/public/delete/order', {        
+                api_token:this.order.api_token,
+                user_guid: this.order.user_guid,
+                tracking: this.order.tracking
+                }).then(data => { 
+                    this.$axios.post('https://app.noest-dz.com/api/public/create/order', {
+                api_token:this.order.api_token,
+                user_guid: this.order.user_guid,
+                client: this.order.client,
+                phone:this.order.phone,
+                adresse:this.order.adresse,
+                wilaya_id:Number(this.modelAddress[0].code) ,
+                commune: this.modelAddress[1].text,
+                montant:Number(this.order.montant) ,
+                remarque:this.order.remarque,
+                reference: '',
+                phone_2: '',
+                produit:JSON.stringify(produit),
+                type_id: Number(this.order.type_id) ,
+                poids:Number(this.order.poids) ,
+                stop_desk:Number(this.order.stop_desk) ,})
+                .then(data => { 
+                    db.updateDocument('delivered', 'orders', this.order.$id,
                     { client: this.order.client,
                       phone:this.order.phone,
                       adresse:this.order.adresse,
@@ -426,10 +516,8 @@ export default {
                       poids:Number(this.order.poids) ,
                       stop_desk:Number(this.order.stop_desk) ,
                       api_token:this.order.api_token,
-                    //  user_id: this.$store.state.auth.user.$id,
-                    //  user_guid: this.$store.state.auth.user.user_guid,
-                    //  statut:'panding',
-                    //  tracking:data.tracking
+                      statut:'panding',
+                      tracking:data.data.tracking
                     }).then(() => { 
                         this.snackbar= true
                         this.snackbarColor ='success'
@@ -439,16 +527,24 @@ export default {
                         this.snackbarColor ='error'
                         this.snackbarText= err
                     })
+                }).catch(err => { 
+                        this.snackbar= true
+                        this.snackbarColor ='error'
+                        this.snackbarText= err
+                })
+
+                }).catch(err => { 
+                    this.snackbar= true
+                    this.snackbarColor ='error'
+                    this.snackbarText= err
+                })
+
+               
             } else {
                 this.$axios.post('https://app.noest-dz.com/api/public/create/order', {
-                // api_token: 'OiHJO2UfRFlKRNWUJbg5L3hG0CEfQmnkDoW',
-                // user_guid: 'TALH5G3I',
-              
 
                 api_token:this.order.api_token,
-                // user_guid: this.$store.state.auth.user.user_guid,
-                user_guid: this.order.user_guid,
-
+                user_guid: this.$store.state.auth.user.user_guid,
                 client: this.order.client,
                 phone:this.order.phone,
                 adresse:this.order.adresse,
@@ -480,8 +576,7 @@ export default {
                           stop_desk:Number(this.order.stop_desk) ,
                           api_token:this.order.api_token,
                           user_id: this.$store.state.auth.user.$id,
-                          // user_guid: this.$store.state.auth.user.user_guid,
-                          user_guid: this.order.user_guid,
+                          user_guid: this.$store.state.auth.user.user_guid,
                           tracking:data.data.tracking,
                           statut:'panding',
                         })
@@ -528,7 +623,7 @@ export default {
         this.globalProducts.splice(index, 1)
             
     },
-
+  
     changeAddress(index, item){ 
         if(index != -1){ 
             this.modelAddress = [...this.modelAddress , item]

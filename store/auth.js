@@ -26,9 +26,9 @@ export const actions = {
             } else {
                 const data = await db.getDocument('delivered', 'users', authUser.$id)
                 const dataDoc = {
-                  email: data.email,
                   username: data.username,
                   role: data.role,
+                  user_guid: data.user_guid,
                 }
                 state.commit('SET_UserInfo', { ...authUser, ...dataDoc })
       
