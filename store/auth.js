@@ -1,7 +1,8 @@
 import { account, db, Query } from "../appwrite.js"
 
 export const state = () => ({
-    user: null
+    user: null,
+    
 })
 
 export const mutations = {

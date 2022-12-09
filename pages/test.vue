@@ -1,6 +1,12 @@
 <template>
     <div>
-        <v-data-table :headers="headers" :items="orders" :search="searchOrder" class="elevation-1 rounded-xl">
+        <v-data-table 
+        :headers="headers" 
+        :items="orders" 
+        :loading="loading"
+        loading-text="Loading... Please wait" 
+        :search="searchOrder" 
+        class="elevation-1 rounded-xl">
             <template v-slot:top>
                 <v-toolbar flat class="">
                     <v-text-field v-model="searchOrder" append-icon="mdi-magnify" label="Search"  hide-details>
@@ -21,17 +27,17 @@
                                 <v-container>
                                     <v-row>
                                         <v-col cols="12"> 
-                                            <v-select v-model="order.api_token" :items="store.state.auth.api"
+                                            <v-select :readonly="readonly" v-model="order.api_token" :items="api"
                                                 item-text="name" item-value="api_token" label="Select an option"
                                             >
                                             </v-select>
                                         </v-col>
                                         <v-col cols="12" sm="6">
-                                            <v-text-field v-model="order.client" :value="order.client"
+                                            <v-text-field :readonly="readonly" v-model="order.client" :value="order.client"
                                                 label="Full Name"></v-text-field>
                                         </v-col>
                                         <v-col cols="12" sm="6">
-                                            <v-text-field v-model="order.phone" :value="order.phone"
+                                            <v-text-field :readonly="readonly" v-model="order.phone" :value="order.phone"
                                                 label="Phone"></v-text-field>
                                         </v-col>
                                         <v-col cols="12">
@@ -52,6 +58,7 @@
                                                 multiple
                                                 small-chips
                                                 solo
+                                                :readonly="readonly"
                                                 >
                                                 <template v-slot:no-data>
                                                     <v-list-item> 
@@ -70,7 +77,7 @@
                                                     <span class="pr-2">
                                                         {{ item.text }}
                                                     </span>
-                                                    <v-icon
+                                                    <v-icon v-if="!readonly"
                                                         small
                                                         @click="parent.selectItem(item), changeAddress(-1, item)"
                                                     >
@@ -97,7 +104,7 @@
                                         </v-container>
                                         </v-col>
                                         <v-col cols="12">
-                                            <v-text-field v-model="order.adresse" :value="order.adresse"
+                                            <v-text-field :readonly="readonly" v-model="order.adresse" :value="order.adresse"
                                                 label="Address"></v-text-field>
                                         </v-col>
                                         
@@ -107,7 +114,7 @@
 
                                     <!-- add products -->
                                     <v-container fluid>
-                                        <v-btn class="my-4" color="primary" @click="initial"> 
+                                        <v-btn v-if="!readonly" class="my-4" color="primary" @click="initial"> 
                                             + add product
                                         </v-btn>
                                         <div class="d-flex" v-for="(globalProduct, global) in globalProducts" :key="(global)"> 
@@ -122,6 +129,7 @@
                                             multiple
                                             small-chips
                                             solo
+                                            :readonly="readonly"
                                         >
                                             <template v-slot:no-data>
                                                 <v-list-item> 
@@ -144,7 +152,7 @@
                                                 <span class="pr-2">
                                                 {{ item.text }}
                                                 </span>
-                                                <v-icon 
+                                                <v-icon v-if="!readonly"
                                                 small
                                                 @click="parent.selectItem(item), change(-1,item, global)"
                                                 >
@@ -185,11 +193,11 @@
 
                                         <v-row v-if="(globalProduct.model.length == 3)">
                                                 <v-col class="d-flex mx-2">
-                                                    <v-text-field type="number" outlined v-model="globalProduct.model[2].quantity"
+                                                    <v-text-field :readonly="readonly" type="number" outlined v-model="globalProduct.model[2].quantity"
                                                         label="Quantity">
                                                     </v-text-field>
                                                 </v-col>
-                                                <v-col class="d-flex  ">
+                                                <v-col v-if="!readonly" class="d-flex  ">
                                                     <v-card-text>Stock :
                                                     </v-card-text>
                                                     <v-card-subtitle v-model="globalProduct.model[2].stock">
@@ -205,8 +213,13 @@
                                                 </v-col>
 
                                             </v-row>
+                                            <v-btn icon class="my-2 mx-2" 
+                                                            @click="((menu = {img:globalProduct.model[0].img}), dialog = true)"
+                                            >
+                                                            <v-icon>mdi-camera</v-icon>
+                                            </v-btn>
 
-                                            <v-btn icon class="my-2 mx-2" @click="remove(global)"> 
+                                            <v-btn v-if="!readonly" icon class="my-2 mx-2" @click="remove(global)"> 
                                             <v-icon color="red">mdi-close-circle</v-icon>
                                             </v-btn>
                                         </div>  
@@ -230,7 +243,7 @@
                                                             <v-img :src="menu.img"></v-img>
                                                         </v-list-item>
                                                     </v-list>
-                                                    <v-list>
+                                                    <v-list v-if="menu.text">
                                                         <v-list-item @click.stop="change(0, menu, menu.global), dialog=false">
                                                         <v-list-item-action>
                                                             <v-icon>mdi-tag</v-icon>
@@ -245,19 +258,19 @@
                                     <!-- end add products -->
                                         <v-row> 
                                             <v-col cols="12"> 
-                                                <v-textarea v-model="order.remarque" outlined label="Note"> 
+                                                <v-textarea :readonly="readonly" v-model="order.remarque" outlined label="Note"> 
 
                                                 </v-textarea>
                                             </v-col>
                                             <v-col cols="6">
-                                                <v-text-field type="number" v-model="order.montant" :value="order.montant"
+                                                <v-text-field :readonly="readonly" type="number" v-model="order.montant" :value="order.montant"
                                                 label="Montant"></v-text-field>
                                             </v-col> 
                                             <v-col cols="6"> 
-                                                <v-text-field type="number" v-model="order.poids" :value="order.poids"
+                                                <v-text-field :readonly="readonly" type="number" v-model="order.poids" :value="order.poids"
                                                 label="Poids"></v-text-field>
                                             </v-col>
-                                            <v-col cols="12"> 
+                                            <v-col v-if="!readonly" cols="12"> 
 
                                                 <v-radio-group
                                                     v-model="order.type_id"
@@ -278,7 +291,7 @@
                                                     ></v-radio>
                                                 </v-radio-group>
                                             </v-col>
-                                            <v-col cols="12"> 
+                                            <v-col v-if="!readonly" cols="12"> 
                                                 <v-radio-group
                                                     v-model="order.stop_desk"
                                                     row
@@ -294,6 +307,70 @@
                                                 </v-radio-group>
                                             </v-col>
                                         </v-row>
+
+                                        <!-- shipping data  -->
+
+                                        <v-card v-if="(readonly)">
+                                                <v-toolbar
+                                                flat
+                                                color="primary"
+                                                dark
+                                                >
+                                                <v-toolbar-title>Activity</v-toolbar-title>
+                                                </v-toolbar>
+                                                <v-tabs vertical>
+                                                <v-tab v-for="(item, index) in shipping.activity" :key="index">
+                                                    <v-chip >
+                                                        {{++index}}
+                                                    </v-chip>
+                                                </v-tab>
+                                                
+                                                <v-tab-item  v-for="(item, index) in shipping.activity" :key="index">
+                                                    <v-card flat>
+                                                    <v-card-text>
+                                                        <span class="text-h4 mb-4">{{ item.event }}</span>
+                                                        <div class="d-flex my-4"> 
+                                                            <sapn class="text-h5 mx-3"> 
+                                                                {{item.by}} : 
+                                                                <v-chip small> 
+                                                                    {{item.causer}}
+                                                                </v-chip>
+                                                            </sapn>
+                                                           
+                                                        </div>
+                                                        <p>{{item.content}}</p>
+                                                        <div class="mx-4 my-4"> 
+                                                            <p> 
+
+                                                                <v-label class="text-align "> 
+                                                                    {{item.name}}
+                                                                </v-label>
+                                                            </p>
+                                                            <p> 
+
+                                                                <v-label class="text-align"> 
+                                                                    {{item.driver}}
+                                                                </v-label>
+                                                            </p>
+                                                            <v-label class="text-align"> 
+                                                                {{item.fdr}}
+                                                            </v-label>
+                                                        </div>
+
+                                                        <v-label class="d-flex text-align mt-2" small> 
+                                            
+                                                            <v-icon> 
+                                                                mdi-clock-outline
+                                                            </v-icon>
+                                                            {{item.date}}
+                                                        </v-label>
+                                                    </v-card-text>
+                                                    </v-card>
+                                                </v-tab-item>
+                                                </v-tabs>
+                                            </v-card>
+
+                                        <!-- end shipping data  -->
                                 </v-container>
                             </v-card-text>
                             <v-card-actions>
@@ -301,22 +378,59 @@
                                 <v-btn color="blue darken-1" text @click="(DialogOrder = false)">
                                     Cancel
                                 </v-btn>
-                                <v-btn  color="primary" text @click="createOrder()">
+                                <v-btn v-if="!readonly" color="primary" text @click="createOrder()">
                                     {{(editedIndex != -1)?'Update':'Create'}}
                                 </v-btn>
+                                <div v-else>  
+                                    <v-btn v-if="(order.statut == 'panding')" color="orange" text @click="validationOrder()">
+                                        Valide
+                                    </v-btn>
+                                    <v-btn v-if="(order.statut == 'prossece')" color="green" text @click="changeStateOrder('complated')">
+                                        Complated
+                                    </v-btn>
+                                    <v-btn v-if="(order.statut == 'prossece')" color="red" text @click="changeStateOrder('rejected')">
+                                        Complated
+                                    </v-btn>
+                                  
+                                </div>
                               
+                            </v-card-actions>
+                        </v-card>
+                    </v-dialog>
+                    <v-dialog v-model="dialogDelete" max-width="500px" content-class=" rounded-xl">
+                        <v-card>
+                            <v-card-title class="text-h5"> Delete</v-card-title>
+                            <v-card-subtitle> 
+                                <v-icon class="mx-auto my-4" larg color="red">
+                                    mdi-delete
+                                </v-icon>
+                                Are you sure you want to delete this item?
+                            </v-card-subtitle>
+                            <v-card-actions>
+                                <v-spacer></v-spacer>
+                                <v-btn color="blue darken-1" text @click="(dialogDelete = false)">Cancel</v-btn>
+                                <v-btn color="primary" text @click="deleteOrder()">Delete</v-btn>
+                                <v-spacer></v-spacer>
                             </v-card-actions>
                         </v-card>
                     </v-dialog>
                    
                 </v-toolbar>
             </template>
+            <template v-slot:item.statut="{ item }">
+                <v-chip
+                    :color="getColor(item.statut)"
+                    dark
+                >
+                    {{ item.statut }}
+                </v-chip>
+            </template>
             <template v-slot:item.actions="{ item }">
-                <v-icon small class="mr-2" @click="showItem(item)">
+                <v-icon small class="mr-2" @click="(readonly = true) , editItem(item)">
                     mdi-eye
                 </v-icon>
-                <v-icon small class="mr-2" @click="editItem(item)">
-                    mdi-pincel
+                <v-icon small class="mr-2" @click="(readonly = false) ,editItem(item)">
+                    mdi-pencil
                 </v-icon>
                 <v-icon small class="mr-2" @click="deleteItem(item)">
                     mdi-delete
@@ -354,45 +468,43 @@ export default {
     globalProducts:[],
     modelAddress : [],
     itemsAddress : wilaya,
+    loading: true,
+    readonly:false,
 
     snackbar:false,
     snackbarColor:'success',
     snackbarText:'',
 
     headers: [
-                {
-                    text: 'ID',
-                    align: 'start',
-                    sortable: false,
-                    value: '$id',
-                },
+                
                 { text: 'Full Name', value: 'client' },
                 { text: 'Phone', value: 'phone' },
+                { text: 'Montant', value: 'montant' },
                 { text: 'Statut', value: 'statut' },
+                { text: 'Created at', value: '$createdAt' },
                 { text: 'Actions', value: 'actions', sortable: false },
             ],
     editedIndex:-1,
 
-    products:[
-        {id:1,text:'t-shert',img: 'https://cdn.vuetifyjs.com/images/john.png'},
-        {id:2,text:'hidjab',img: 'https://cdn.vuetifyjs.com/images/john.png'}
-    ],
-    variations:[{id:1,color:'red',size:'s',stock:20,price:150},{id:1,color:'black',size:'s',stock:10,price:140},{id:1,color:'red',size:'xl',stock:10,price:450},{id:2,color:'red',size:'s',stock:70,price:100}],
+    products:[],
+    variations:[],
     menu: null,
     dialog:false,
+    dialogDelete:false,
     x: 0,
     search: null,
     searchOrder:'',
     orders:[],
-    order:{api_token: 'OiHJO2UfRFlKRNWUJbg5L3hG0CEfQmnkDoW',
-            user_guid: 'TALH5G3I'},
+    order:{},
+    shipping:{},
+    api: [{api_token:'OiHJO2UfRFlKRNWUJbg5L3hG0CEfQmnkDoW', name:'la fomidable'}],
     DialogOrder:false,
     y: 0,
   }),
 
   computed: {
         formTitle() {
-            return this.editedIndex === -1 ? 'Create New Order' : 'Edit Order'
+            return this.editedIndex === -1 ? 'Create New Order' : this.readonly?'Order':'Edit Order'
         },
     },
 
@@ -401,9 +513,34 @@ export default {
   },
   mounted(){ 
     this.initial()
+    this.getDataInitial()
+    
   },
 
   methods: {
+
+    getDataInitial(){ 
+        db.listDocuments('delivered', 'orders').then((data) => {
+                this.orders = data.documents
+                this.loading = false
+        })
+        db.listDocuments('delivered', 'products').then((data) => {
+                this.products = data.documents.map(item => ({id:item.$id, text:item.name, img:item.img}))
+            })
+        db.listDocuments('delivered', 'variations').then((data) => {
+            this.variations = data.documents.map(item => ({
+                    id:item.$id,
+                    product_id:item.productID, 
+                    color:item.colour, 
+                    size:item.size,
+                    stock:item.quantity,
+                    price:item.price
+            }))
+        })    
+        db.listDocuments('delivered', 'apis').then((data) => {
+                this.api = data.documents
+        })
+    },
     newOrder(){ 
         if(this.editedIndex != -1){ 
 
@@ -418,10 +555,17 @@ export default {
     },
     editItem(item){ 
         this.order = item
-        this.editedIndex = this.products.indexOf(item)
+        this.editedIndex = this.orders.indexOf(item)
         this.globalProducts = JSON.parse(this.order.produit_model)
         this.modelAddress = JSON.parse(this.order.address_model)
         this.DialogOrder = true
+        this.$axios.post('https://app.noest-dz.com/api/public/get/tracking/info', {
+            api_token:this.order.api_token,
+            user_guid: this.order.user_guid,
+            tracking: this.order.tracking
+        }).then(data => { 
+            this.shipping = data.data
+                })
     },
 
     validationOrder(){
@@ -437,6 +581,13 @@ export default {
                         this.snackbarText= err
                     })
     },
+    deleteItem(item) {
+            this.order = item
+            this.editedIndex = this.orders.indexOf(item)
+           // this.DataDetails = Object.assign({}, item)
+            this.dialogDelete = true
+    },
+    
     deleteOrder(){ 
         this.$axios.post('https://app.noest-dz.com/api/public/delete/order', {        
                 api_token:this.order.api_token,
@@ -447,6 +598,7 @@ export default {
                         this.snackbar= true
                         this.snackbarColor ='success'
                         this.snackbarText= 'success'
+                        this.dialogDelete = false
                     }).catch(err => { 
                         this.snackbar= true
                         this.snackbarColor ='error'
@@ -584,6 +736,7 @@ export default {
                             this.snackbar= true
                             this.snackbarColor ='success'
                             this.snackbarText= 'success'
+                            this.DialogOrder = false
                         }).catch(err => { 
                             this.snackbar= true
                             this.snackbarColor ='error'
@@ -653,12 +806,12 @@ export default {
                     })
         }else if(this.globalProducts[global].model.length == 1){ 
                         this.globalProducts[global].items = [{ header: 'Select an color or create one' }]
-                        this.variations.filter(item => (item.id == this.globalProducts[global].model[0].id)).forEach(item => { 
+                        this.variations.filter(item => (item.product_id == this.globalProducts[global].model[0].id)).forEach(item => { 
                             this.globalProducts[global].items.push({id : item.id, text : item.color, color : item.color})
                         })
         }else if(this.globalProducts[global].model.length == 2){ 
             this.globalProducts[global].items = [{ header: 'Select an size or create one' }]
-                        this.variations.filter(item => (item.id == this.globalProducts[global].model[0].id && item.color == this.globalProducts[global].model[1].text )).forEach(item => { 
+                        this.variations.filter(item => (item.product_id == this.globalProducts[global].model[0].id && item.color == this.globalProducts[global].model[1].text )).forEach(item => { 
                             this.globalProducts[global].items.push({id : item.id, text : item.size, price : item.price, stock : item.stock, quantity : 1 })
                         })
         }else if (this.globalProducts[global].model.length == 3){ 
@@ -683,6 +836,13 @@ export default {
         .toLowerCase()
         .indexOf(query.toString().toLowerCase()) > -1
     },
+
+    getColor (data) {
+        if (data == 'rejected') return 'red'
+        else if (data == 'prossece') return 'orange'
+        else if (data == 'complited') return 'green'
+        else return 'gray'
+      },
 
   },
 }

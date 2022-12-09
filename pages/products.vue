@@ -95,7 +95,13 @@
                    
                     <v-dialog v-model="dialogDelete" max-width="500px" content-class=" rounded-xl">
                         <v-card>
-                            <v-card-title class="text-h5">Are you sure you want to delete this item?</v-card-title>
+                            <v-card-title class="text-h5"> Delete</v-card-title>
+                            <v-card-subtitle> 
+                                <v-icon class="mx-auto my-4" larg color="red">
+                                    mdi-delete
+                                </v-icon>
+                                Are you sure you want to delete this item?
+                            </v-card-subtitle>
                             <v-card-actions>
                                 <v-spacer></v-spacer>
                                 <v-btn color="blue darken-1" text @click="closeDelete">Cancel</v-btn>
