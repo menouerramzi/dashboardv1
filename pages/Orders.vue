@@ -549,6 +549,7 @@ export default {
             this.changeAddress(-1, {})
         }
         this.editedIndex = -1
+        this.readonly = false
         this.DialogOrder = true
     },
     editItem(item){ 
