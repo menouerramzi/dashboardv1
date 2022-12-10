@@ -1,847 +1,885 @@
 <template>
-    <div class="">
-        <v-data-table :headers="headers" :items="orders" sort-by="calories" :search="search" class="rounded-xl elevation-1">
+    <div>
+        <v-data-table 
+        :headers="headers" 
+        :items="orders" 
+        :loading="loading"
+        loading-text="Loading... Please wait" 
+        :search="searchOrder" 
+        class="elevation-1 rounded-xl">
             <template v-slot:top>
-                <v-toolbar flat class="rounded-xl">
-                    
-                    <v-toolbar-title>Orders</v-toolbar-title>
-                    <v-divider class="mx-4" inset vertical></v-divider>
-                    <v-spacer></v-spacer>
-                    <v-text-field v-model="search" append-icon="mdi-magnify" label="Search" single-line hide-details>
+                <v-toolbar flat class="">
+                    <v-text-field v-model="searchOrder" append-icon="mdi-magnify" label="Search"  hide-details>
                     </v-text-field>
                     <v-divider class="mx-4" inset vertical></v-divider>
                     <v-spacer></v-spacer>
-                    <v-dialog v-model="dialog" max-width="500px">
+                    <v-btn color="primary" dark class="mb-2" @click="newOrder()">
+                      + Create Order
+                    </v-btn>
+                    <v-dialog v-model="DialogOrder" max-width="1100px" content-class=" rounded-xl">
                         <template v-slot:activator="{ on, attrs }">
-                            <v-btn color="primary" dark class="mb-2 rounded-xl" v-bind="attrs" v-on="on">
-                                New Item
-                            </v-btn>
                         </template>
                         <v-card>
-                            <v-card-title>
+                            <v-card-title class="d-flex justify-space-between">
                                 <span class="text-h5">{{ formTitle }}</span>
                             </v-card-title>
-
                             <v-card-text>
                                 <v-container>
                                     <v-row>
-                                        <v-col cols="12" sm="6" md="6">
-                                            <v-text-field v-model="addfield.Fullname" label="Full Name"></v-text-field>
+                                        <v-col cols="12"> 
+                                            <v-select :readonly="readonly" v-model="order.api_token" :items="api"
+                                                item-text="name" item-value="api_token" label="Select an option"
+                                            >
+                                            </v-select>
                                         </v-col>
-                                        <v-col cols="12" sm="6" md="6">
-                                            <v-text-field v-model="addfield.Address" label="Address"></v-text-field>
+                                        <v-col cols="12" sm="6">
+                                            <v-text-field :readonly="readonly" v-model="order.client" :value="order.client"
+                                                label="Full Name"></v-text-field>
                                         </v-col>
+                                        <v-col cols="12" sm="6">
+                                            <v-text-field :readonly="readonly" v-model="order.phone" :value="order.phone"
+                                                label="Phone"></v-text-field>
+                                        </v-col>
+                                        <v-col cols="12">
+                                            <v-label> 
+                                                Wilaya And Commune
+                                            </v-label>
+                                            <v-container fluid> 
 
-                                    </v-row>
-                                    <v-row>
-                                        <v-col cols="12" sm="3" md="3">
-                                            <v-text-field type="number" v-model="addfield.Wilaya" label="Wilaya">
-                                            </v-text-field>
-                                        </v-col>
-                                        <v-col cols="12" sm="3" md="3">
-                                            <v-text-field v-model="addfield.Commune" label="Commune"></v-text-field>
-                                        </v-col>
-                                        <v-col cols="12" sm="6" md="6">
-                                            <v-text-field v-model="addfield.PhoneNumber" label="Phone Number">
-                                            </v-text-field>
-                                        </v-col>
-                                    </v-row>
-                                    <v-row>
-
-                                        <!-- test -->
-                                        <v-combobox
-                                                    v-model="model"
-                                                    :filter="filter"
-                                                    :hide-no-data="!search"
-                                                    :items="items"
-                                                    :search-input.sync="search"
-                                                    hide-selected
-                                                    label="Search for an option"
-                                                    multiple
-                                                    small-chips
-                                                    solo
+                                           
+                                            <v-combobox
+                                                v-model="modelAddress"
+                                                :filter="filter"
+                                                :hide-no-data="!search"
+                                                :items="itemsAddress"
+                                                :search-input.sync="search"
+                                                hide-selected
+                                                label="Search for an Address"
+                                                multiple
+                                                small-chips
+                                                solo
+                                                :readonly="readonly"
+                                                >
+                                                <template v-slot:no-data>
+                                                    <v-list-item> 
+                                                        <span class="subheading"> No data!</span>
+                                                    </v-list-item>
+                                                </template>
+                                                <template v-slot:selection="{ attrs, item, parent, selected }">
+                                                    <v-chip
+                                                    v-if="item === Object(item)"
+                                                    v-bind="attrs"
+                                                    :color="`${item.color} lighten-3`"
+                                                    :input-value="selected"
+                                                    label
+                                                    small
                                                     >
-                                                    <template v-slot:no-data>
-                                                        <v-list-item>
-                                                        <span class="subheading">Create</span>
-                                                        <v-chip
-                                                            :color="`${colors[nonce - 1]} lighten-3`"
-                                                            label
-                                                            small
-                                                        >
-                                                            {{ search }}
-                                                        </v-chip>
-                                                        </v-list-item>
-                                                    </template>
-                                                    <template v-slot:selection="{ attrs, item, parent, selected }">
-                                                        <v-chip
-                                                        v-if="item === Object(item)"
-                                                        v-bind="attrs"
-                                                        :color="`${item.color} lighten-3`"
-                                                        :input-value="selected"
-                                                        label
+                                                    <span class="pr-2">
+                                                        {{ item.text }}
+                                                    </span>
+                                                    <v-icon v-if="!readonly"
                                                         small
-                                                        >
-                                                        <span class="pr-2">
-                                                            {{ item.text }}
-                                                        </span>
-                                                        <v-icon
-                                                            small
-                                                            @click="parent.selectItem(item)"
-                                                        >
-                                                            $delete
-                                                        </v-icon>
-                                                        </v-chip>
-                                                    </template>
-                                                    <template v-slot:item="{ index, item }">
-                                                        <v-text-field
-                                                        v-if="editing === item"
-                                                        v-model="editing.text"
-                                                        autofocus
-                                                        flat
-                                                        background-color="transparent"
-                                                        hide-details
-                                                        solo
-                                                        @keyup.enter="edit(index, item)"
-                                                        ></v-text-field>
+                                                        @click="parent.selectItem(item), changeAddress(-1, item)"
+                                                    >
+                                                        $delete
+                                                    </v-icon>
+                                                    </v-chip>
+                                                </template>
+                                                <template v-slot:item="{ index, item }">
+                                                    <v-list-item @click.stop="changeAddress(index, item)"> 
                                                         <v-chip
-                                                        v-else
                                                         :color="`${item.color} lighten-3`"
                                                         dark
                                                         label
                                                         small
+                                                        
                                                         >
-                                                        {{ item.text }}
+                                                            {{ item.text }}
                                                         </v-chip>
                                                         <v-spacer></v-spacer>
-                                                        <v-list-item-action @click.stop>
-                                                        <v-btn
+                                                    </v-list-item> 
+
+                                                </template>
+                                            </v-combobox>
+                                        </v-container>
+                                        </v-col>
+                                        <v-col cols="12">
+                                            <v-text-field :readonly="readonly" v-model="order.adresse" :value="order.adresse"
+                                                label="Address"></v-text-field>
+                                        </v-col>
+                                        
+                                        
+                                    </v-row>
+                                    
+
+                                    <!-- add products -->
+                                    <v-container fluid>
+                                        <v-btn v-if="!readonly" class="my-4" color="primary" @click="initial"> 
+                                            + add product
+                                        </v-btn>
+                                        <div class="d-flex" v-for="(globalProduct, global) in globalProducts" :key="(global)"> 
+                                            <v-combobox
+                                            v-model="globalProduct.model"
+                                            :filter="filter"
+                                            :hide-no-data="!search"
+                                            :items="globalProduct.items"
+                                            :search-input.sync="search"
+                                            hide-selected
+                                            label="Search for an option"
+                                            multiple
+                                            small-chips
+                                            solo
+                                            :readonly="readonly"
+                                        >
+                                            <template v-slot:no-data>
+                                                <v-list-item> 
+                                                <span class="subheading"> No data!</span>
+                                                </v-list-item>
+
+                                            </template>
+                                            <template v-slot:selection="{ attrs, item, parent, selected }">
+                                            <v-chip
+                                                v-if="item === Object(item)"
+                                                v-bind="attrs"
+                                                :color="`${item.color} lighten-3`"
+                                                :input-value="selected"
+                                                label
+                                                small
+                                            >
+                                                <v-avatar left v-if="item.img">
+                                                <v-img :src="item.img"></v-img>
+                                                </v-avatar>
+                                                <span class="pr-2">
+                                                {{ item.text }}
+                                                </span>
+                                                <v-icon v-if="!readonly"
+                                                small
+                                                @click="parent.selectItem(item), change(-1,item, global)"
+                                                >
+                                                $delete
+                                                </v-icon>
+                                            </v-chip>
+                                            </template>
+                                            <template v-slot:item="{ index, item }">
+                                                <v-list-item @click.stop="change(index, item, global)"> 
+
+                                                    <v-chip
+                                                    :color="`${item.color} lighten-3`"
+                                                    dark
+                                                    label
+                                                    
+                                                    
+                                                    >
+                                                    <v-avatar left  v-if="item.img">
+                                                        <v-img :src="item.img"></v-img>
+                                                    </v-avatar>
+                                                    {{ item.text }}
+                                                    </v-chip>
+                                                    <v-spacer></v-spacer>
+                                                    <v-list-item-action>
+                                                    <div  class="d-flex"> 
+                                        
+                                                        <v-btn v-if="(item.img && globalProduct.model.length == 0)"
                                                             icon
-                                                            @click.stop.prevent="edit(index, item)"
-                                                        >
-                                                            <v-icon>{{ editing !== item ? 'mdi-pencil' : 'mdi-check' }}</v-icon>
+                                                            @click.stop="(menu = {...item, global:global}), dialog=true"
+                                                            >
+                                                            <v-icon>mdi-camera</v-icon>
                                                         </v-btn>
-                                                        </v-list-item-action>
-                                                    </template>
+                                                    </div>
+                                                    </v-list-item-action>
+                                                </v-list-item>
+                                            </template>
                                         </v-combobox>
-                                                    <!-- end test -->
 
-
-
-                                        <!-- <div v-for="(DataDetail, index) in addfield" :key="(index)">
-                                            <v-card outlined class="pa-2 my-2">
-                                                <v-row>
-                                                    <v-col>
-                                                        <v-select v-model="DataDetail.Name" :items="itemDetails"
-                                                            item-text="Name" item-value="Name" label="Select Items"
-                                                            @change="getDetails(DataDetail.Name, 'Colour', index)">
-                                                        </v-select>
-                                                    </v-col>
-                                                    <v-col>
-                                                        <v-select v-model="DataDetail.Colour"
-                                                            :items="ColourDetail[index]" item-text="Colour"
-                                                            item-value="Colour" label="Select Colour"
-                                                            @change="getDetails(DataDetail.Colour, detail = 'Size', index)">
-                                                        </v-select>
-                                                    </v-col>
-                                                    <v-col>
-                                                        <v-select v-model="DataDetail.Size" :items="SizeDetail[index]"
-                                                            item-text="Size" item-value="Size" label="Select Size"
-                                                            @change="getDetails(DataDetail.Size, '', index)">
-                                                        </v-select>
-                                                    </v-col>
-                                                </v-row>
-
-                                                <div>
-                                                    <v-row>
-                                                        <v-col class="d-flex align-center ">
-                                                            <v-text-field v-model="DataDetail.Quantity"
-                                                                label="Quantity">
-                                                            </v-text-field>
-                                                        </v-col>
-                                                        <v-col class="d-flex align-center ">
-                                                            <v-card-text>Stock :
-                                                            </v-card-text>
-                                                            <v-card-subtitle v-model="addfield.Stock"
-                                                                v-for="qntt in Quantity[index]" :key="qntt">{{
-                                                                        qntt.Quantity
-                                                                }}
-                                                            </v-card-subtitle>
-                                                        </v-col>
-
-                                                    </v-row>
-
-
-
-                                                    <v-card-subtitle>
-                                                        <v-chip class="" color="red" outlined
-                                                            @click="remove(index, DataDetail, 'old')"
-                                                            v-show="index != 0"> Delete
-                                                            X
-                                                        </v-chip>
+                                        <v-row v-if="(globalProduct.model.length == 3)">
+                                                <v-col class="d-flex mx-2">
+                                                    <v-text-field :readonly="readonly" type="number" outlined v-model="globalProduct.model[2].quantity"
+                                                        label="Quantity">
+                                                    </v-text-field>
+                                                </v-col>
+                                                <v-col v-if="!readonly" class="d-flex  ">
+                                                    <v-card-text>Stock :
+                                                    </v-card-text>
+                                                    <v-card-subtitle v-model="globalProduct.model[2].stock">
+                                                    {{globalProduct.model[2].stock}}
                                                     </v-card-subtitle>
-                                                </div>
+                                                </v-col>
+                                                <v-col class="d-flex  ">
+                                                    <v-card-text>Price :
+                                                    </v-card-text>
+                                                    <v-card-subtitle v-model="globalProduct.model[2].price">
+                                                    {{globalProduct.model[2].price}}
+                                                    </v-card-subtitle>
+                                                </v-col>
+
+                                            </v-row>
+                                            <v-btn icon class="my-2 mx-2" 
+                                                            @click="((menu = {img:globalProduct.model[0].img}), dialog = true)"
+                                            >
+                                                            <v-icon>mdi-camera</v-icon>
+                                            </v-btn>
+
+                                            <v-btn v-if="!readonly" icon class="my-2 mx-2" @click="remove(global)"> 
+                                            <v-icon color="red">mdi-close-circle</v-icon>
+                                            </v-btn>
+                                        </div>  
+                                        
+                                        <v-dialog
+                                        v-model="dialog"
+                                        width="300"
+                                        >
+                                        <v-card width="300" v-if="menu">
+                                                    <v-list dark>
+                                                        <v-list-item>
+                                                            <v-list-item-action style="position:absolute; z-index:2; top:0px;right:0px;">
+                                                                <v-btn
+                                                                icon
+                                                                @click.stop="(menu = null), dialog=false"
+                                                                
+                                                                >
+                                                                <v-icon color="red">mdi-close-circle</v-icon>
+                                                                </v-btn>
+                                                            </v-list-item-action>
+                                                            <v-img :src="menu.img"></v-img>
+                                                        </v-list-item>
+                                                    </v-list>
+                                                    <v-list v-if="menu.text">
+                                                        <v-list-item @click.stop="change(0, menu, menu.global), dialog=false">
+                                                        <v-list-item-action>
+                                                            <v-icon>mdi-tag</v-icon>
+                                                        </v-list-item-action>
+                                                        <v-list-item-subtitle>{{menu.text}}</v-list-item-subtitle>
+                                                        </v-list-item>
+                                                    </v-list>
                                             </v-card>
-                                        </div>
-                                        <v-col cols="12">
-                                            <v-text-field v-model="addfield.Remarque" label="Remarque">
-                                            </v-text-field>
-                                        </v-col>
+                                        </v-dialog>
 
-                                        <v-col cols="12" sm="6" md="6">
-                                            <v-select v-model="addfield.Delivery" :items="deliveryType" item-text="type"
-                                                item-value="value" label="Delivery Type">
+                                        </v-container>
+                                    <!-- end add products -->
+                                        <v-row> 
+                                            <v-col cols="12"> 
+                                                <v-textarea :readonly="readonly" v-model="order.remarque" outlined label="Note"> 
 
-                                            </v-select>
-                                        </v-col>
-                                        <v-col cols="12" sm="6" md="6">
-                                            <v-text-field v-model="addfield.Total" label="Total">
-                                            </v-text-field>
-                                        </v-col> -->
+                                                </v-textarea>
+                                            </v-col>
+                                            <v-col cols="6">
+                                                <v-text-field :readonly="readonly" type="number" v-model="order.montant" :value="order.montant"
+                                                label="Montant"></v-text-field>
+                                            </v-col> 
+                                            <v-col cols="6"> 
+                                                <v-text-field :readonly="readonly" type="number" v-model="order.poids" :value="order.poids"
+                                                label="Poids"></v-text-field>
+                                            </v-col>
+                                            <v-col v-if="!readonly" cols="12"> 
 
-                                    </v-row>
+                                                <v-radio-group
+                                                    v-model="order.type_id"
+                                                    row
+                                                    
+                                                    >
+                                                    <v-radio
+                                                        label="Livraison"
+                                                        value="1"
+                                                    ></v-radio>
+                                                    <v-radio
+                                                        label="Echange"
+                                                        value="2"
+                                                    ></v-radio>
+                                                    <v-radio
+                                                        label="Pick up"
+                                                        value="3"
+                                                    ></v-radio>
+                                                </v-radio-group>
+                                            </v-col>
+                                            <v-col v-if="!readonly" cols="12"> 
+                                                <v-radio-group
+                                                    v-model="order.stop_desk"
+                                                    row
+                                                    >
+                                                    <v-radio
+                                                        label="Home"
+                                                        value="0"
+                                                    ></v-radio>
+                                                    <v-radio
+                                                        label="Stop desk"
+                                                        value="1"
+                                                    ></v-radio>
+                                                </v-radio-group>
+                                            </v-col>
+                                        </v-row>
+
+                                        <!-- shipping data  -->
+
+                                        <v-card v-if="(readonly)">
+                                                <v-toolbar
+                                                flat
+                                                color="primary"
+                                                dark
+                                                >
+                                                <v-toolbar-title>Activity</v-toolbar-title>
+                                                </v-toolbar>
+                                                <v-tabs vertical>
+                                                <v-tab v-for="(item, index) in shipping.activity" :key="index">
+                                                    <v-chip >
+                                                        {{++index}}
+                                                    </v-chip>
+                                                </v-tab>
+                                                
+                                                <v-tab-item  v-for="(item, index) in shipping.activity" :key="index">
+                                                    <v-card flat>
+                                                    <v-card-text>
+                                                        <span class="text-h4 mb-4">{{ item.event }}</span>
+                                                        <div class="d-flex my-4"> 
+                                                            <sapn class="text-h5 mx-3"> 
+                                                                {{item.by}} : 
+                                                                <v-chip small> 
+                                                                    {{item.causer}}
+                                                                </v-chip>
+                                                            </sapn>
+                                                           
+                                                        </div>
+                                                        <p>{{item.content}}</p>
+                                                        <div class="mx-4 my-4"> 
+                                                            <p> 
+
+                                                                <v-label class="text-align "> 
+                                                                    {{item.name}}
+                                                                </v-label>
+                                                            </p>
+                                                            <p> 
+
+                                                                <v-label class="text-align"> 
+                                                                    {{item.driver}}
+                                                                </v-label>
+                                                            </p>
+                                                            <v-label class="text-align"> 
+                                                                {{item.fdr}}
+                                                            </v-label>
+                                                        </div>
+
+                                                        <v-label class="d-flex text-align mt-2" small> 
+                                            
+                                                            <v-icon> 
+                                                                mdi-clock-outline
+                                                            </v-icon>
+                                                            {{item.date}}
+                                                        </v-label>
+                                                    </v-card-text>
+                                                    </v-card>
+                                                </v-tab-item>
+                                                </v-tabs>
+                                            </v-card>
+
+                                        <!-- end shipping data  -->
                                 </v-container>
                             </v-card-text>
-
                             <v-card-actions>
-                                <v-btn color="blue darken-1" text @click="addMore()">
-                                    Add Variation
-                                </v-btn>
                                 <v-spacer></v-spacer>
-                                <v-btn color="blue darken-1" text @click="close">
+                                <v-btn color="blue darken-1" text @click="(DialogOrder = false)">
                                     Cancel
                                 </v-btn>
-                                <v-btn color="blue darken-1" text @click="AddNewClient()">
-                                    Add Order
+                                <v-btn v-if="!readonly" color="primary" text @click="createOrder()">
+                                    {{(editedIndex != -1)?'Update':'Create'}}
                                 </v-btn>
+                                <div v-else>  
+                                    <v-btn v-if="(order.statut == 'panding')" color="orange" text @click="validationOrder()">
+                                        Valide
+                                    </v-btn>
+                                    <v-btn v-if="(order.statut == 'prossece')" color="green" text @click="changeStateOrder('complated')">
+                                        Complated
+                                    </v-btn>
+                                    <v-btn v-if="(order.statut == 'prossece')" color="red" text @click="changeStateOrder('rejected')">
+                                        Complated
+                                    </v-btn>
+                                  
+                                </div>
+                              
                             </v-card-actions>
                         </v-card>
                     </v-dialog>
-
-                    <!--==View order content==-->
-                    <v-dialog v-model="dialogEdit" max-width="500px">
+                    <v-dialog v-model="dialogDelete" max-width="500px" content-class=" rounded-xl">
                         <v-card>
-                            <v-card-title>
-                                <span class="text-h5">View Order</span>
-                            </v-card-title>
-
-                            <v-card-text>
-                                <v-container>
-                                    <v-row>
-                                        <v-col cols="12" sm="6" md="6">
-                                            <v-text-field v-model="ordersDetail.FullName" disabled label="Full Name">
-                                            </v-text-field>
-                                        </v-col>
-                                        <v-col cols="12" sm="6" md="6">
-                                            <v-text-field v-model="ordersDetail.Address" disabled label="Address">
-                                            </v-text-field>
-                                        </v-col>
-                                    </v-row>
-                                    <v-row>
-                                        <v-col cols="12" sm="4" md="4">
-                                            <v-text-field v-model="ordersDetail.Wilaya" disabled label="Wilaya">
-                                            </v-text-field>
-                                        </v-col>
-                                        <v-col cols="12" sm="4" md="4">
-                                            <v-text-field v-model="ordersDetail.Commune" disabled label="Baladiya">
-                                            </v-text-field>
-                                        </v-col>
-                                        <v-col cols="12" sm="4" md="4">
-                                            <v-text-field v-model="ordersDetail.PhoneNumber" disabled
-                                                label="Phone Number">
-                                            </v-text-field>
-                                        </v-col>
-                                    </v-row>
-                                    <v-row>
-
-                                        <v-col cols="12">
-                                            <v-text-field v-model="ordersDetail.produit" disabled>
-                                            </v-text-field>
-                                        </v-col>
-
-                                        <!--  <v-col cols="12" sm="6" md="6">
-                                           <v-text-field v-model="ordersDetail.Shiping" label="Shiping">
-                                            </v-text-field> 
-                                        </v-col> -->
-                                        <v-col cols="12">
-                                            <v-text-field v-model="ordersDetail.Total" disabled label="Total">
-                                            </v-text-field>
-                                        </v-col>
-                                    </v-row>
-                                </v-container>
-                            </v-card-text>
-
-                            <v-card-actions>
-                                <v-btn v-if="editButtons.delete" color="blue darken-1" text
-                                    @click="deleteClient(ordersDetail)">
-                                    Delete
-                                </v-btn>
-                                <v-btn v-if="editButtons.reject" color="blue darken-1" text
-                                    @click="isRejected(ordersDetail)">
-                                    Reject
-                                </v-btn>
-                                <v-spacer></v-spacer>
-                                <v-btn color="blue darken-1" text @click="close">
-                                    Cancel
-                                </v-btn>
-
-                                <v-btn v-if="editButtons.confirm" color="blue darken-1" text
-                                    @click="confirmed(ordersDetail)">
-                                    Confirm
-                                </v-btn>
-
-                            </v-card-actions>
-                        </v-card>
-                    </v-dialog>
-
-                    <!--==ddddddddddddddddddddd==-->
-                    <v-dialog v-model="dialogDelete" max-width="500px">
-                        <v-card>
-                            <v-card-title class="text-h5">Are you sure you want to delete this item?</v-card-title>
+                            <v-card-title class="text-h5"> Delete</v-card-title>
+                            <v-card-subtitle> 
+                                <v-icon class="mx-auto my-4" larg color="red">
+                                    mdi-delete
+                                </v-icon>
+                                Are you sure you want to delete this item?
+                            </v-card-subtitle>
                             <v-card-actions>
                                 <v-spacer></v-spacer>
-                                <v-btn color="blue darken-1" text @click="closeDelete">Cancel</v-btn>
-                                <v-btn color="blue darken-1" text @click="deleteItemConfirm">OK</v-btn>
+                                <v-btn color="blue darken-1" text @click="(dialogDelete = false)">Cancel</v-btn>
+                                <v-btn color="primary" text @click="deleteOrder()">Delete</v-btn>
                                 <v-spacer></v-spacer>
                             </v-card-actions>
                         </v-card>
                     </v-dialog>
+                   
                 </v-toolbar>
             </template>
+            <template v-slot:item.statut="{ item }">
+                <v-chip
+                    :color="getColor(item.statut)"
+                    dark
+                >
+                    {{ item.statut }}
+                </v-chip>
+            </template>
             <template v-slot:item.actions="{ item }">
-                <v-icon small class="mr-2" @click="editItem(item)">
+                <v-icon small class="mr-2" @click="(readonly = true) , editItem(item)">
+                    mdi-eye
+                </v-icon>
+                <v-icon small class="mr-2" @click="(readonly = false) ,editItem(item)">
                     mdi-pencil
                 </v-icon>
-                <v-icon small @click="deleteClient(item)">
+                <v-icon small class="mr-2" @click="deleteItem(item)">
                     mdi-delete
                 </v-icon>
             </template>
             <template v-slot:no-data>
-                <v-btn color="primary" @click="initialize">
-                    Reset
-                </v-btn>
+                <div class=""> 
+                    <v-img class="mx-auto" width="300" height="200" :src="require('@/assets/images/empty.svg')"></v-img>
+                    <v-btn class="mx-auto my-2" color="" outlined @click="newOrder()">
+                        Create Order
+                    </v-btn>
+                </div>
             </template>
         </v-data-table>
+        <v-snackbar v-model="snackbar" :color="snackbarColor">
+        {{ snackbarText }}
+  
+        <template #action="{ attrs }">
+          <v-btn color="" text v-bind="attrs" @click="snackbar = false">
+            close
+          </v-btn>
+        </template>
+      </v-snackbar>
     </div>
 </template>
+
 <script>
-import { db, Query } from "../appwrite.js"
+
+import { db, Query, ID } from "../appwrite.js"
+import wilaya from '@/assets/Wilaya-Of-Algeria-master/Wilaya_Of_Algeria.json'
+import commune from '@/assets/Wilaya-Of-Algeria-master/Commune_Of_Algeria.json'
+
 export default {
-    data() {
-        return {
+  data: () => ({
+    globalProducts:[],
+    modelAddress : [],
+    itemsAddress : wilaya,
+    loading: true,
+    readonly:false,
 
+    snackbar:false,
+    snackbarColor:'success',
+    snackbarText:'',
 
-
-            activator: null,
-      attach: null,
-      colors: ['green', 'purple', 'indigo', 'cyan', 'teal', 'orange'],
-      editing: null,
-      editingIndex: -1,
-      items: [
-        { header: 'Select an option or create one' },
-        {
-          text: 'Foo',
-          color: 'blue',
-          variations:
-            [ 
-                {size:'xl',color:'red'},
-                {size:'s',color:'blue'}
-            ],
-          
-        },
-        {
-          text: 'Bar',
-          color: 'red',
-          variations:
-            [ 
-                {size:'xl',color:'red'},
-                {size:'xl',color:'blue'}
-            ],
-        },
-      ],
-      nonce: 1,
-      menu: false,
-      model: [
-        {
-          text: 'Foo',
-          color: 'blue',
-        },
-      ],
-      x: 0,
-      y: 0,
-
-
-
-
-
-
-
-            dialogEdit: false,
-            search: '',
-            editButtons: {
-                reject: true,
-                delete: false,
-                confirm: true,
-            },
-            addfield: [{
-                Item: '',
-                Size: '',
-                Colour: '',
-                Quantity: '',
-                id: '',
-                Name: '',
-                Wilaya: '',
-                PhoneNumber: 0,
-                Total: 0,
-                Shipping: '',
-                Status: 0
-            }],
-            newOrder: [],
-            dialog: false,
-            dialogDelete: false,
-            headers: [
-                {
-                    text: 'ID',
-                    align: 'start',
-                    sortable: false,
-                    value: '$id',
-                },
-                { text: 'Full Name', value: 'FullName' },
-                { text: 'Wilaya', value: 'Wilaya' },
-                { text: 'Phone Number', value: 'PhoneNumber' },
-                { text: 'Total', value: 'Total' },
-                { text: 'Status', value: 'Status' },
-
+    headers: [
+                { text: 'Full Name', value: 'client' },
+                { text: 'Phone', value: 'phone' },
+                { text: 'Montant', value: 'montant' },
+                { text: 'Statut', value: 'statut' },
+                { text: 'Created at', value: '$createdAt' },
                 { text: 'Actions', value: 'actions', sortable: false },
             ],
-            deliveryType: [{ type: 'Home delivery', value: '0' },
-            { type: 'Stop Desk', value: '1' }],
-            orders: [],
-            editedIndex: -1,
-            editedItem: {
-                id: '',
-                FullName: 0,
-                Wilaya: 0,
-                PhoneNumber: 0,
-                Total: 0,
-                Status: 0
-            },
-            defaultItem: {
-                id: '',
-                FullName: 0,
-                Wilaya: 0,
-                PhoneNumber: 0,
-                Total: 0,
-                Status: 0
-            },
-            itemDetails: [],
-            ColourDetail: [],
-            SizeDetail: [],
-            Quantity: [{ 0: { Quantity: 0 } }],
-            changedData: '',
-            ordersDetail: {
-                Details: {},
-                Activity: {},
-                Data: {},
-                produit: {}
-            },
-        }
+    editedIndex:-1,
+
+    products:[],
+    variations:[],
+    menu: null,
+    dialog:false,
+    dialogDelete:false,
+    x: 0,
+    search: null,
+    searchOrder:'',
+    orders:[],
+    order:{},
+    shipping:{},
+    api: [{api_token:'OiHJO2UfRFlKRNWUJbg5L3hG0CEfQmnkDoW', name:'la fomidable'}],
+    DialogOrder:false,
+    y: 0,
+  }),
+
+  computed: {
+        formTitle() {
+            return this.editedIndex === -1 ? 'Create New Order' : this.readonly?'Order':'Edit Order'
+        },
     },
 
-    watch: {
-      model (val, prev) {
-        if (val.length === prev.length) return
+  watch: {
+    
+  },
+  mounted(){ 
+    this.initial()
+    this.getDataInitial()
+  },
 
-        this.model = val.map(v => {
-          if (typeof v === 'string') {
-            v = {
-              text: v,
-              color: this.colors[this.nonce - 1],
-            }
+  methods: {
 
-            this.items.push(v)
-
-            this.nonce++
-          }
-
-          return v
+    getDataInitial(){ 
+        db.listDocuments('delivered', 'orders').then((data) => {
+                this.orders = data.documents
+                this.loading = false
         })
-      },
+        db.listDocuments('delivered', 'products').then((data) => {
+                this.products = data.documents.map(item => ({id:item.$id, text:item.name, img:item.img, rejected:item.rejected, complited:item.complited}))
+            })
+        db.listDocuments('delivered', 'variations').then((data) => {
+            this.variations = data.documents.map(item => ({
+                    id:item.$id,
+                    product_id:item.productID, 
+                    color:item.colour, 
+                    size:item.size,
+                    stock:item.quantity,
+                    price:item.price
+            }))
+        })    
+        db.listDocuments('delivered', 'apis').then((data) => {
+                this.api = data.documents
+        })
+    },
+    newOrder(){ 
+        if(this.editedIndex != -1){ 
+
+            this.order = {}
+            this.globalProducts = []
+            this.initial()
+            this.modelAddress = []
+            this.changeAddress(-1, {})
+        }
+        this.editedIndex = -1
+        this.DialogOrder = true
+    },
+    editItem(item){ 
+        this.order = item
+        this.editedIndex = this.orders.indexOf(item)
+        this.globalProducts = JSON.parse(this.order.produit_model)
+        this.modelAddress = JSON.parse(this.order.address_model)
+        this.DialogOrder = true
+        this.$axios.post('https://app.noest-dz.com/api/public/get/tracking/info', {
+            api_token:this.order.api_token,
+            user_guid: this.order.user_guid,
+            tracking: this.order.tracking
+        }).then(data => { 
+            this.shipping = data.data
+                })
     },
 
-    methods: {
-
-
-
-        edit (index, item) {
-        if (!this.editing) {
-          this.editing = item
-          this.editingIndex = index
-        } else {
-          this.editing = null
-          this.editingIndex = -1
-        }
-      },
-      filter (item, queryText, itemText) {
-        if (item.header) return false
-
-        const hasValue = val => val != null ? val : ''
-
-        const text = hasValue(itemText)
-        const query = hasValue(queryText)
-
-        return text.toString()
-          .toLowerCase()
-          .indexOf(query.toString().toLowerCase()) > -1
-      },
-
-
-
-        isRejected(items) {
-
-            //  console.log(index)
-            db.updateDocument('delivered', 'Orders', items.$id,
-                { Status: "Rejected" }).then(() => {
-
-                    this.editButtons.delete = true
-                    this.editButtons.confirm = true
-                    this.editButtons.reject = false
-                })
-        },
-        confirmed(items) {
-            this.$axios.post('https://app.noest-dz.com/api/public/valid/order', {
-                api_token: 'OiHJO2UfRFlKRNWUJbg5L3hG0CEfQmnkDoW',
-                user_guid: 'TALH5G3I',
-                tracking: items.Tracking
-            }).then(() => {
-                db.updateDocument('delivered', 'Orders', items.$id,
-                    { Status: "confirmed" }).then(() => {
-                        this.editButtons.delete = true
-                        this.editButtons.confirm = false
-                        this.editButtons.reject = false
+    validationOrder(){
+        this.$axios.post('https://app.noest-dz.com/api/public/valid/order', {        
+                api_token:this.order.api_token,
+                user_guid: this.order.user_guid,
+                tracking: this.order.tracking
+                }).then(() => { 
+                    this.changeStateOrder('prossece')
+                }).catch(err => { 
+                        this.snackbar= true
+                        this.snackbarColor ='error'
+                        this.snackbarText= err
                     })
-            })
-        },
-        // function to Create a new Order
-        async AddNewClient() {
-            let details = ''
-            const orderDetails = this.addfield
-          
-            await orderDetails.forEach(element => {
-                details = details + element.Name + ' - ' + element.Colour + ' - ' + element.Size + ' x ' + element.Quantity.toString() + ' | '
-
-            });
-            const userid = this.$store.state.auth.user.id
-         //   console.log(userID)
-            this.$axios.post('https://app.noest-dz.com/api/public/create/order', {
-                api_token: 'OiHJO2UfRFlKRNWUJbg5L3hG0CEfQmnkDoW',
-                user_guid: 'TALH5G3I',
-                reference: '',
-                client: this.addfield.Fullname,
-                phone: this.addfield.PhoneNumber,
-                phone_2: '',
-                adresse: this.addfield.Address,
-                wilaya_id: this.addfield.Wilaya,
-                montant: this.addfield.Total,
-                commune: this.addfield.Commune,
-                remarque: this.addfield.Remarque,
-                produit: details,
-                type_id: 1,
-                poids: 1,
-                stop_desk: 1,
-                stock: 0
-            }).then((success) => {
-                //  console.log(success.data.tracking)
-                db.createDocument('delivered', 'orders', "unique()",
-                    {
-                        "FullName": this.addfield.Fullname,
-                        "Address": this.addfield.Address,
-                        "Wilaya": this.addfield.Wilaya,
-                        "PhoneNumber": this.addfield.PhoneNumber,
-                        "Shiping": this.addfield.Shipping,
-                        "Total": this.addfield.Total,
-                        "Status": "Processing",
-                        "userID": this.$store.state.auth.user.$id,
-                        "Remarque": this.addfield.Remarque,
-                        "Commune": this.addfield.Commune,
-                        "Tracking": success.data.tracking
-                    }).then((id) => {
-                        //  console.log(id)
-                        const id_ = id.$id
-                        this.addfield.forEach(element => {
-                            const name = element.Name
-                            const colour = element.Colour
-                            const size = element.Size
-
-                            //  console.log(name)
-                            db.listDocuments('delivered', 'products', [Query.equal('Name', [name])])
-                                .then((data) => {
-                                    const detail = data.documents[0].Name
-                                    //  console.log(detail)
-                                    db.createDocument('delivered', 'ordersDetail', "unique()",
-                                        {
-                                            "id_": id_,
-                                            "Colour": colour,
-                                            "Size": size,
-                                            "Item": detail,
-                                        }).then(() => {
-
-                                        })
-
-                                })
-                        })
-                        this.orders.push(id)
-                    }).catch((err) => { alert(err) })
-            }).catch((err) => { //  console.log(err) 
-            })
-            //  console.log(this.addfield)
-
-            this.AddNew = false
-            this.Done = true
-            this.ShowClient = false
-            this.ShowClient = true
-
-        },
-        addMore() {
-            this.addfield.push({
-                Item: '',
-                Size: '',
-                Colour: '',
-            });
-        },
-
-        // function to remove variations 
-
-        getDetails(data, detail, index) {
-
-            if (detail == 'Colour') {
-                this.ColourDetail[index] = []
-                //     this.ColourDetail = []
-                const Name = data
-                const i = index
-                //   this.ColourDetail[index] = this.ColourDetail[index] || [];
-                //    var ColourDetail = this.ColourDetail[index];
-                //   console.log(this.ColourDetail)
-                db.listDocuments('delivered', 'products', [Query.equal('Name', [Name])]).then((data) => {
-                    const id_ = data.documents[0].$id
-                    //  console.log(id_)
-                    db.listDocuments('delivered', 'variations', [Query.equal('id_', [id_])]).then((dataDer) => {
-                        const dataorder = dataDer.documents
-                        this.ColourDetail[index] = [...dataorder]
-                        this.ColourDetail = [...this.ColourDetail]
-                    })
-
-                })
-            } else if (detail == 'Size') {
-                this.SizeDetail[index] = []
-                const colour = data
-                const id = data
-                this.changedData = data
-                db.listDocuments('delivered', 'variations', [Query.equal('Colour', [colour])]).then((data) => {
-                    const rzlt = data.documents
-                    this.SizeDetail[index] = [...rzlt];
-                    this.SizeDetail = [...this.SizeDetail];
-
-
-                })
-            } else {
-                const Size = data
-                // console.log(id)
-
-                this.Quantity[index] = []
-                db.listDocuments('delivered', 'variations', [Query.equal('Colour', [this.changedData]), Query.equal('Size', [Size])]).then((data) => {
-                    const rzlt = data.documents
-                    //this.Quantity = rzlt
-                    this.Quantity[index] = [...rzlt];
-                    this.Quantity = [...this.Quantity];
-                    //  console.log(this.Quantity)
-                    //8     console.log(this.Quantity)
-
-
-                })
-            }
-
-        },
-        // function to delete order
-        deleteClient(data) {
-            this.itemDetails = data
-            //  console.log(data)
-            this.editedIndex = this.orders.indexOf(data)
-            this.editedItem = Object.assign({}, data)
-            this.dialogDelete = true
-        },
-        initialize() {
-
-            db.listDocuments('delivered', 'orders').then((data) => {
-                //  console.log(data)
-                const rzlt = data.documents
-                // rzlt.forEach(orders => {});
-                const datax = data.documents.filter(data => (data.deletedAt == "null"))
-                //  console.log(datax)
-                this.orders = datax
-                //    console.log(this.orders)
-            }),
-                db.listDocuments('delivered', 'products').then((data) => {
-                    const prdcts = data.documents
-                    prdcts.forEach(data => {
-                        const items = data
-                        this.itemDetails.push(items)
-
-
-                    })
-                    //  console.log(this.itemDetails)
-                })
-        },
-
-        editItem(item) {
-            //  console.log(item.Tracking)
-            const track = item.Tracking
+    },
+    deleteItem(item) {
+            this.order = item
             this.editedIndex = this.orders.indexOf(item)
-            this.ordersDetail = Object.assign({}, item)
-            this.$axios.post('https://app.noest-dz.com/api/public/get/tracking/info', {
-                api_token: 'OiHJO2UfRFlKRNWUJbg5L3hG0CEfQmnkDoW',
-                user_guid: 'TALH5G3I',
-                tracking: track
-            }).then((success) => {
-                const ordersData = success.data.OrderInfo
-                this.ordersDetail.produit = ordersData.produit
-              //  console.log(this.ordersDetail)
-                const id = this.ordersDetail.$id
-             //   console.log(success)
-                db.listDocuments('delivered', 'OrdersDetail', [
-                    Query.equal('id_', [id])
-                ]).then((data) => {
-                    //################################
-                    // Const for data of the order
-                    const rzlt = data.documents
-                    const shippingInfo = success.data.activity
-                    //################################
-                    // Arrays to using theme later
-                    const detail = []
-                    const Activity = []
-                    //################################
-                    rzlt.forEach(data => {
-                        const items = data
-                        detail.push(items)
-                    })
-                    shippingInfo.forEach(data => {
-                        const items = data
-                        Activity.push(items)
-                    })
-                    this.ordersDetail.Details = detail
-                    this.ordersDetail.Activity = Activity
-               //     console.log(this.ordersDetail)
-                    const status = item.Status
-                    if (status === "Processing") {
-                        this.editButtons.confirm = true
-                        this.editButtons.reject = true
-                        this.editButtons.delete = false
-                    } else if (status === "confirmed") {
-                        this.editButtons.delete = true
-                        this.editButtons.confirm = false
-                        this.editButtons.reject = false
-                    } else if (status === "Rejected") {
-                        this.editButtons.confirm = true
-                        this.editButtons.reject = false
-                        this.editButtons.delete = true
-                    } else {
-                        this.editButtons.confirm = false
-                        this.editButtons.reject = false
-                        this.editButtons.delete = false
-                    }
-                    this.dialogEdit = true
-
-                })
-            })
-
-
-        },
-        remove(index) {
-            this.addfield.splice(index, 1)
-        },
-        deleteItem(item) {
-            this.editedIndex = this.desserts.indexOf(item)
-            this.editedItem = Object.assign({}, item)
+           // this.DataDetails = Object.assign({}, item)
             this.dialogDelete = true
-            const data = this.ordersDetail
-
-
-       //     console.log(data)
-        },
-        deleteItemConfirm() {
-            const data = this.ordersDetail
-            const tracking = this.ordersDetail.Tracking
-         //   console.log(data.Tracking)
-         //   console.log(tracking)
-            this.$axios.post('https://app.noest-dz.com/api/public/delete/order', {
-                api_token: 'OiHJO2UfRFlKRNWUJbg5L3hG0CEfQmnkDoW',
-                user_guid: 'TALH5G3I',
-                tracking: tracking
-            }).then((deletSatatus) => {
-                const success = deletSatatus.data.success
-                if (success) {
-                    //  console.log(deletSatatus)
-                    const idd = this.ordersDetail.$id
-                    db.updateDocument('delivered', 'orders', idd, { Status: 'Deleted', deletedAt: new Date() }).then(() => {
-                        this.orders.splice(this.editedIndex, 1)
-                        this.closeDelete()
-                        //  console.log(idd)
+    },
+    
+    deleteOrder(){ 
+        this.$axios.post('https://app.noest-dz.com/api/public/delete/order', {        
+                api_token:this.order.api_token,
+                user_guid: this.order.user_guid,
+                tracking: this.order.tracking
+                }).then(data => { 
+                    db.deleteDocument('delivered', 'orders', this.order.$id).then(()=>{
+                        this.snackbar= true
+                        this.snackbarColor ='success'
+                        this.snackbarText= 'success'
+                        this.dialogDelete = false
+                    }).catch(err => { 
+                        this.snackbar= true
+                        this.snackbarColor ='error'
+                        this.snackbarText= err
                     })
+                }).catch(err => { 
+                        this.snackbar= true
+                        this.snackbarColor ='error'
+                        this.snackbarText= err
+                    })
+    },
+    // https://app.noest-dz.com/download/etiq/
+    changeStateOrder(state){ 
+        Object.assign(this.orders[this.editedIndex], {...this.order, statut:state})
+        db.updateDocument('delivered', 'orders', this.order.$id,
+                    {
+                        statut:state,
+                    }).then(() => { 
+                        this.snackbar= true
+                        this.snackbarColor ='success'
+                        this.snackbarText= 'success'
+                        this.order.statut = state 
 
-                } else {
-               //     console.log('try again')
+
+                    const data =  this.globalProducts.map(item => ({
+                        rejected:item.model[0].rejected,
+                        complited:item.model[0].complited,
+                        product_id:item.model[0].id,
+                        variation_id:item.model[2].id,
+                        stock:item.model[2].stock,
+                        quantity:item.model[2].quantity
+                    }))
+
+                if(state == 'complited'){ 
+
+                    data.forEach(item => { 
+                        
+                        db.updateDocument('delivered', 'products', item.product_id,
+                        {
+                            complited: Number(item.complited) + Number(item.quantity)
+                        })
+                        db.updateDocument('delivered', 'variations', item.variation_id,
+                        {
+                            stock: Number(item.stock) - Number(item.quantity)
+                        })    
+                    })
+                }else if(state == 'rejected'){ 
+                    db.updateDocument('delivered', 'products', item.product_id,
+                        {
+                            rejected: Number(item.rejected) + Number(item.quantity)
+                        })
                 }
 
-            }).catch((err) => { console.log(err) })
+                db.updateDocument('delivered', 'products', this.order.$id,
+                    {
+                        statut:state,
+                    })
 
-        },
+                    }).catch(err => { 
+                        this.snackbar= true
+                        this.snackbarColor ='error'
+                        this.snackbarText= err
+                    })
+    },
 
-        close() {
-            this.dialog = false
-            this.$nextTick(() => {
-                this.editedItem = Object.assign({}, this.defaultItem)
-                this.editedIndex = -1
-            })
-        },
+    createOrder(){ 
+        const produit = this.globalProducts.map(item => item.model.map(item => item.text)+' : '+item.model[2].quantity)
+            
+        if (this.editedIndex > -1) {
+                Object.assign(this.orders[this.editedIndex], this.order)
+                this.$axios.post('https://app.noest-dz.com/api/public/delete/order', {        
+                api_token:this.order.api_token,
+                user_guid: this.order.user_guid,
+                tracking: this.order.tracking
+                }).then(data => { 
+                    this.$axios.post('https://app.noest-dz.com/api/public/create/order', {
+                api_token:this.order.api_token,
+                user_guid: this.order.user_guid,
+                client: this.order.client,
+                phone:this.order.phone,
+                adresse:this.order.adresse,
+                wilaya_id:Number(this.modelAddress[0].code) ,
+                commune: this.modelAddress[1].text,
+                montant:Number(this.order.montant) ,
+                remarque:this.order.remarque,
+                reference: '',
+                phone_2: '',
+                produit:JSON.stringify(produit),
+                type_id: Number(this.order.type_id) ,
+                poids:Number(this.order.poids) ,
+                stop_desk:Number(this.order.stop_desk) ,})
+                .then(data => { 
+                    db.updateDocument('delivered', 'orders', this.order.$id,
+                    { client: this.order.client,
+                      phone:this.order.phone,
+                      adresse:this.order.adresse,
+                      wilaya_id:Number(this.modelAddress[0].code) ,
+                      commune: this.modelAddress[1].text,
+                      address_model: JSON.stringify(this.modelAddress),
+                      montant:Number(this.order.montant) ,
+                      remarque:this.order.remarque,
+                      produit:JSON.stringify(produit),
+                      produit_model: JSON.stringify(this.globalProducts),
+                      type_id: Number(this.order.type_id) ,
+                      poids:Number(this.order.poids) ,
+                      stop_desk:Number(this.order.stop_desk) ,
+                      api_token:this.order.api_token,
+                      statut:'panding',
+                      tracking:data.data.tracking
+                    }).then(() => { 
+                        this.snackbar= true
+                        this.snackbarColor ='success'
+                        this.snackbarText= 'success'
+                    }).catch(err => { 
+                        this.snackbar= true
+                        this.snackbarColor ='error'
+                        this.snackbarText= err
+                    })
+                }).catch(err => { 
+                        this.snackbar= true
+                        this.snackbarColor ='error'
+                        this.snackbarText= err
+                })
 
-        closeDelete() {
-            this.dialogDelete = false
-            this.$nextTick(() => {
-                this.editedItem = Object.assign({}, this.defaultItem)
-                this.editedIndex = -1
-            })
-        },
+                }).catch(err => { 
+                    this.snackbar= true
+                    this.snackbarColor ='error'
+                    this.snackbarText= err
+                })
 
-        save() {
-            if (this.editedIndex > -1) {
-                Object.assign(this.desserts[this.editedIndex], this.editedItem)
+               
             } else {
-                this.desserts.push(this.editedItem)
+                this.$axios.post('https://app.noest-dz.com/api/public/create/order', {
+
+                api_token:this.order.api_token,
+                user_guid: this.$store.state.auth.user.user_guid,
+                client: this.order.client,
+                phone:this.order.phone,
+                adresse:this.order.adresse,
+                wilaya_id:Number(this.modelAddress[0].code) ,
+                commune: this.modelAddress[1].text,
+                montant:Number(this.order.montant) ,
+                remarque:this.order.remarque,
+                reference: '',
+                phone_2: '',
+                produit:JSON.stringify(produit),
+                type_id: Number(this.order.type_id) ,
+                poids:Number(this.order.poids) ,
+                stop_desk:Number(this.order.stop_desk) ,
+                }).then((data) => {
+
+                    db.createDocument('delivered', 'orders', 'unique()', {
+                          client: this.order.client,
+                          phone:this.order.phone,
+                          adresse:this.order.adresse,
+                          wilaya_id:Number(this.modelAddress[0].code)  ,
+                          commune:this.modelAddress[1].text,
+                          address_model: JSON.stringify(this.modelAddress),
+                          montant:Number(this.order.montant) ,
+                          remarque:this.order.remarque,
+                          produit:JSON.stringify(produit),
+                          produit_model: JSON.stringify(this.globalProducts),
+                          type_id: Number(this.order.type_id) ,
+                          poids:Number(this.order.poids) ,
+                          stop_desk:Number(this.order.stop_desk) ,
+                          api_token:this.order.api_token,
+                          user_id: this.$store.state.auth.user.$id,
+                          user_guid: this.$store.state.auth.user.user_guid,
+                          tracking:data.data.tracking,
+                          statut:'panding',
+                        })
+                        .then(() => { 
+                            this.snackbar= true
+                            this.snackbarColor ='success'
+                            this.snackbarText= 'success'
+                            this.DialogOrder = false
+                        }).catch(err => { 
+                            this.snackbar= true
+                            this.snackbarColor ='error'
+                            this.snackbarText= err
+                        })
+                }).catch(err => { 
+                            this.snackbar= true
+                            this.snackbarColor ='error'
+                            this.snackbarText= err
+                        })
+
             }
-            this.close()
-        },
-    },
-    beforeMount() {
-        // function to get Documents of orders
-
-    },
-    computed: {
-        formTitle() {
-            return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
-        },
     },
 
-    watch: {
-        dialog(val) {
-            val || this.close()
-        },
-        dialogDelete(val) {
-            val || this.closeDelete()
-        },
+
+
+
+
+
+
+
+
+
+
+
+
+    initial(){
+        
+        const items = [{ header: 'Select an product or create one' }]
+                    this.products.forEach(item => { 
+                        items.push({id : item.id, text : item.text, img : item.img})
+                    })
+        this.globalProducts.push({items:items, model:[]})
+    },
+    remove(index) {
+          
+        this.globalProducts.splice(index, 1)
+            
+    },
+  
+    changeAddress(index, item){ 
+        if(index != -1){ 
+            this.modelAddress = [...this.modelAddress , item]
+        }
+        if(this.modelAddress.length == 0){ 
+            this.itemsAddress = [{header: 'Select an wilaya or create one'}, ...wilaya] 
+        }else if(this.modelAddress.length == 1){ 
+            this.itemsAddress = [{header: 'Select an commune or create one'}]
+            commune.filter(item => (item.wilaya_id == this.modelAddress[0].code)).forEach(item => { 
+                this.itemsAddress.push(item)
+            })
+        }else if(this.modelAddress.length == 2){
+            this.itemsAddress = []
+        }
     },
 
-    created() {
-        this.initialize()
+    change (index, item, global) {
+        if(index != -1){ 
+
+            this.globalProducts[global].model = [...this.globalProducts[global].model , item]
+        }
+        if(this.globalProducts[global].model.length == 0){ 
+
+          this.globalProducts[global].items = [{ header: 'Select an product or create one' }]
+                    this.products.forEach(item => { 
+                        this.globalProducts[global].items.push({id : item.id, text : item.text, img : item.img, rejected:item.rejected, complited:item.complited})
+                    })
+        }else if(this.globalProducts[global].model.length == 1){ 
+                        this.globalProducts[global].items = [{ header: 'Select an color or create one' }]
+                        this.variations.filter(item => (item.product_id == this.globalProducts[global].model[0].id)).forEach(item => { 
+                            this.globalProducts[global].items.push({id : item.id, text : item.color, color : item.color})
+                        })
+        }else if(this.globalProducts[global].model.length == 2){ 
+            this.globalProducts[global].items = [{ header: 'Select an size or create one' }]
+                        this.variations.filter(item => (item.product_id == this.globalProducts[global].model[0].id && item.color == this.globalProducts[global].model[1].text )).forEach(item => { 
+                            this.globalProducts[global].items.push({id : item.id, text : item.size, price : item.price, stock : item.stock, quantity : 1 })
+                        })
+        }else if (this.globalProducts[global].model.length == 3){ 
+            this.globalProducts[global].items = []
+            // alert(JSON.stringify(this.globalProducts))
+            
+            
+        }else{ 
+            this.change(-1, null, global)  
+        }
     },
+
+    filter (item, queryText, itemText) {
+      if (item.header) return false
+
+      const hasValue = val => val != null ? val : ''
+
+      const text = hasValue(itemText)
+      const query = hasValue(queryText)
+
+      return text.toString()
+        .toLowerCase()
+        .indexOf(query.toString().toLowerCase()) > -1
+    },
+
+    getColor (data) {
+        if (data == 'rejected') return 'red'
+        else if (data == 'prossece') return 'orange'
+        else if (data == 'complited') return 'green'
+        else return 'gray'
+      },
+
+  },
 }
 </script>

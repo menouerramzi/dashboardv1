@@ -151,14 +151,7 @@ export default {
             snackbarText:'',
             products: [],
             variations: [],
-            product: [{
-                name: '',
-                colour: '',
-                size: '',
-                quantity: '',
-                price: '',
-                $id: -1
-            }],
+            product: {},
             dialog: false,
             dialogDelete: false,
             headers: [
