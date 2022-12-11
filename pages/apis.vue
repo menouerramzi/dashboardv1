@@ -1,6 +1,6 @@
 <template>
     <div>
-        <v-data-table :headers="headers" :items="apis" :search="search" class="elevation-1 rounded-xl">
+        <v-data-table :headers="headers" :items="apis" :loading="loading" loading-text="Loading... Please wait"  :search="search" class="elevation-1 rounded-xl">
             <template v-slot:top>
                 <v-toolbar flat class="">
                     <v-text-field v-model="search" append-icon="mdi-magnify" label="Search"  hide-details>
@@ -103,6 +103,7 @@ export default {
             apis: [],
             api: {},
             dialog: false,
+            loading: true,
             dialogDelete: false,
             headers: [
                 {
@@ -185,6 +186,7 @@ export default {
         initialize() {
             db.listDocuments('delivered', 'apis').then((data) => {
                 this.apis = data.documents
+                this.loading = false
             })
         },
         editItem(item) {

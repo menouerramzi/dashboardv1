@@ -53,7 +53,7 @@
                                                 :hide-no-data="!search"
                                                 :items="itemsAddress"
                                                 :search-input.sync="search"
-                                                hide-selected
+                                                
                                                 label="Search for an Address"
                                                 multiple
                                                 small-chips
@@ -101,6 +101,9 @@
 
                                                 </template>
                                             </v-combobox>
+                                            <v-span v-if="modelAddress[0]"> 
+                                                Frais de livraison : {{modelAddress[0].livrasion}} DA - Frais STOP DESK : {{modelAddress[0].desk}} DA
+                                            </v-span>
                                         </v-container>
                                         </v-col>
                                         <v-col cols="12">
@@ -213,7 +216,7 @@
                                                 </v-col>
 
                                             </v-row>
-                                            <v-btn icon class="my-2 mx-2" 
+                                            <v-btn v-if="globalProduct.model[0]" icon class="my-2 mx-2" 
                                                             @click="((menu = {img:globalProduct.model[0].img}), dialog = true)"
                                             >
                                                             <v-icon>mdi-camera</v-icon>
@@ -264,11 +267,11 @@
                                             </v-col>
                                             <v-col cols="6">
                                                 <v-text-field :readonly="readonly" type="number" v-model="order.montant" :value="order.montant"
-                                                label="Montant"></v-text-field>
+                                                label="Montant (DA)"></v-text-field>
                                             </v-col> 
                                             <v-col cols="6"> 
                                                 <v-text-field :readonly="readonly" type="number" v-model="order.poids" :value="order.poids"
-                                                label="Poids"></v-text-field>
+                                                label="Poids (kg)"></v-text-field>
                                             </v-col>
                                             <v-col v-if="!readonly" cols="12"> 
 
@@ -459,9 +462,9 @@
 
 <script>
 
-import { db, Query, ID } from "../appwrite.js"
+import { db, Query, ID, storage } from "../appwrite.js"
 import wilaya from '@/assets/Wilaya-Of-Algeria-master/Wilaya_Of_Algeria.json'
-import commune from '@/assets/Wilaya-Of-Algeria-master/Commune_Of_Algeria.json'
+import commune from '@/assets/Wilaya-Of-Algeria-master/CommuneOfAlgeria.json'
 
 export default {
   data: () => ({
@@ -511,8 +514,7 @@ export default {
     
   },
   mounted(){ 
-    this.initial()
-    this.getDataInitial()
+      this.getDataInitial()
   },
 
   methods: {
@@ -523,7 +525,8 @@ export default {
                 this.loading = false
         })
         db.listDocuments('delivered', 'products').then((data) => {
-                this.products = data.documents.map(item => ({id:item.$id, text:item.name, img:item.img, rejected:item.rejected, complited:item.complited}))
+                this.products = data.documents.map(item => ({id:item.$id, text:item.name, img:item.imgUrl, rejected:item.rejected, complited:item.complited}))
+                this.initial()
             })
         db.listDocuments('delivered', 'variations').then((data) => {
             this.variations = data.documents.map(item => ({
@@ -557,6 +560,7 @@ export default {
         this.editedIndex = this.orders.indexOf(item)
         this.globalProducts = JSON.parse(this.order.produit_model)
         this.modelAddress = JSON.parse(this.order.address_model)
+        this.shipping = {}
         this.DialogOrder = true
         this.$axios.post('https://app.noest-dz.com/api/public/get/tracking/info', {
             api_token:this.order.api_token,
@@ -769,11 +773,13 @@ export default {
                           tracking:data.data.tracking,
                           statut:'panding',
                         })
-                        .then(() => { 
+                        .then((data) => { 
                             this.snackbar= true
                             this.snackbarColor ='success'
                             this.snackbarText= 'success'
                             this.DialogOrder = false
+                            this.orders.push({...data})
+
                         }).catch(err => { 
                             this.snackbar= true
                             this.snackbarColor ='error'

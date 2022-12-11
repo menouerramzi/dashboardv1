@@ -1,6 +1,6 @@
 <template>
     <div>
-        <v-data-table :headers="headers" :items="products" :search="search" class="elevation-1 rounded-xl">
+        <v-data-table :headers="headers" :items="products" :loading="loading" loading-text="Loading... Please wait"  :search="search" class="elevation-1 rounded-xl">
             <template v-slot:top>
                 <v-toolbar flat class="">
                     <v-text-field v-model="search" append-icon="mdi-magnify" label="Search"  hide-details>
@@ -23,6 +23,14 @@
                                         <v-col cols="12">
                                             <v-text-field v-model="product.name" :value="product.name"
                                                 label="Product name"></v-text-field>
+                                        </v-col>
+                                        <v-col cols="12">
+                                            <v-file-input accept="image/png, image/jpeg, image/bmp"
+                                                prepend-icon="mdi-camera" show-size v-model="product.imgInput"
+                                                placeholder="Product picture" truncate-length="5"></v-file-input>
+                                        </v-col>
+                                        <v-col  v-if="((editedIndex != -1) && product.imgUrl)"  cols="12"> 
+                                            <v-img class="mx-auto" width="300" height="200" :src="product.imgUrl+'&mode=admin'"></v-img>   
                                         </v-col>
                                         <v-card-actions class="align-center">
                                             <v-btn color="primary" text @click="addMore()">
@@ -112,6 +120,11 @@
                     </v-dialog>
                 </v-toolbar>
             </template>
+            <template v-slot:item.imgUrl="{ item }">
+                <v-img width="40" height="40" :src="item.imgUrl" style="border-radius: 50px"> 
+
+                </v-img>
+            </template>
             <template v-slot:item.actions="{ item }">
                 <v-icon small class="mr-2" @click="editItem(item)">
                     mdi-pencil
@@ -141,7 +154,7 @@
     </div>
 </template>
 <script>
-import { db, Query, ID } from "../appwrite.js"
+import { db, Query, ID ,storage } from "../appwrite.js"
 export default {
     data() {
         return {
@@ -153,15 +166,18 @@ export default {
             variations: [],
             product: {},
             dialog: false,
+            loading: true,
             dialogDelete: false,
             headers: [
                 {
-                    text: 'ID',
+                    text: 'image',
                     align: 'start',
                     sortable: false,
-                    value: '$id',
+                    value: 'imgUrl',
                 },
                 { text: 'Product Name', value: 'name' },
+                { text: 'Complited ', value: 'complited' },
+                { text: 'Rejected', value: 'rejected' },
                 { text: 'Actions', value: 'actions', sortable: false },
             ],
             editedIndex: -1,
@@ -215,6 +231,7 @@ export default {
             }
         },
         deleteProduct() {
+            storage.deleteFile('productsimg', this.product.img)
             db.listDocuments('delivered', 'variations', [
                 Query.equal('productID', [this.ProductID])
             ]).then((data) => {
@@ -223,10 +240,9 @@ export default {
                     db.deleteDocument('delivered', 'variations', element.$id)
                 });
                 this.products.splice(this.editedIndex, 1)
-                this.closeDelete()
                 db.deleteDocument('delivered', 'products', this.ProductID).then(() => { 
-
                 })
+                this.closeDelete()
             })
         },
         newProduct() {
@@ -251,18 +267,45 @@ export default {
                 this.snackbarText= err
              })
         },
-        createProduct() {
 
+        async createProduct() {
+            let img = {}
+            let imgUrl = ''
             if (this.editedIndex > -1) {
-                Object.assign(this.products[this.editedIndex], this.product)
+                if(this.product.imgInput){ 
+                    if(this.product.img){ 
+
+                        storage.deleteFile('productsimg', this.product.img)
+                    }
+                    img = await storage.createFile('productsimg', 'unique()', this.product.imgInput)
+                    imgUrl = await storage.getFilePreview('productsimg', img.$id, 300, 200)
+                }
+                Object.assign(this.products[this.editedIndex], {...this.product, imgUrl:imgUrl})
                 db.updateDocument('delivered', 'products', this.product.$id,
-                    { name: this.product.name }).then(() => { 
+                    { 
+                        name: this.product.name,
+                        imgUrl: imgUrl,
+                        img: img.$id
+                    }).then(() => { 
                         this.snackbar= true
                         this.snackbarColor ='success'
                         this.snackbarText= 'success'
                     })
             } else {
-                db.createDocument('delivered', 'products', 'unique()', { name: this.product.name })
+                if(this.product.imgInput){ 
+
+                    img = await storage.createFile('productsimg', 'unique()', this.product.imgInput)
+                    imgUrl = await storage.getFilePreview('productsimg', img.$id, 300, 200)
+                    // alert(JSON.stringify(imgUrl))
+                }
+                db.createDocument('delivered', 'products', 'unique()', {
+                     name: this.product.name,
+                     imgUrl: imgUrl,
+                     img: img.$id,
+                     complited:0,
+                     rejected:0
+
+                     })
                     .then((data) => {
                         this.variations.forEach(element => {
                             db.createDocument('delivered', 'variations', 'unique()', {
@@ -293,6 +336,7 @@ export default {
         initialize() {
             db.listDocuments('delivered', 'products').then((data) => {
                 this.products = data.documents
+                this.loading = false
             })
         },
         editItem(item) {
@@ -317,7 +361,7 @@ export default {
         deleteItem(item) {
             this.ProductID = item.$id
             this.editedIndex = this.products.indexOf(item)
-           // this.DataDetails = Object.assign({}, item)
+            this.product = item
             this.dialogDelete = true
         },
     
