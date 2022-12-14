@@ -1,5 +1,125 @@
 <template>
     <div>
+        <div>
+        
+        <v-row class="my-4">
+            <v-col cols="6" sm="3"> 
+                <v-text-field  type="date" v-model="statisticsTotal.dateBefor" :value="statisticsTotal.dateBefor"
+                    label="Star Date"></v-text-field> 
+            </v-col> 
+            <v-col cols="6" sm="3"> 
+                <v-text-field  type="date"  v-model="statisticsTotal.dateAfter" :value="statisticsTotal.dateAfter"
+                    label="End Date"></v-text-field> 
+            </v-col>
+            <v-col cols="6" sm="3"> 
+                <v-select v-model="statisticsTotal.api_token" :items="api"
+                    item-text="name" item-value="api_token" label="Select an option">
+                </v-select>
+            </v-col>
+            <v-col cols="6" sm="3"> 
+                <v-select v-model="statisticsTotal.user" :items="users"
+                    item-text="username" item-value="$id" label="Select an User">
+                </v-select>
+            </v-col> 
+        </v-row>
+        <div class="d-flex"> 
+            <v-spacer></v-spacer>
+                <v-btn color="primary" dark @click="statistics()">
+                      Statistics
+                </v-btn>
+        </div>
+        <v-row class="my-4"> 
+            
+            <v-col cols="6" sm="3"> 
+                <v-card class="elevation-1 rounded-xl"> 
+                    <v-card-title>
+                    <v-icon color=""> 
+                    </v-icon>
+                        Pandding
+                    </v-card-title>
+                    <v-card-subtitle>
+                        <span class="text-h5"> 
+                            {{statisticsTotal.montantPanding}} DA
+                        </span>
+                    </v-card-subtitle>
+                    <v-card-text class="d-flex justify-space-between"> 
+                        <span class="text-h8"> 
+                            Montant
+                        </span>
+                        <span class="text-h8"> 
+                            Orders: {{statisticsTotal.nbOrderPanding}}
+                        </span>
+                    </v-card-text>
+                </v-card>
+            </v-col>
+            <v-col cols="6" sm="3"> 
+                <v-card class="elevation-1 rounded-xl"> 
+                    <v-card-title>
+                    <v-icon color="orange"> 
+                    </v-icon>
+                        Process
+                    </v-card-title>
+                    <v-card-subtitle>
+                        <span class="text-h5"> 
+                            {{statisticsTotal.montantProcess}} DA
+                        </span>
+                    </v-card-subtitle>
+                    <v-card-text class="d-flex justify-space-between"> 
+                        <span class="text-h8"> 
+                            Montant
+                        </span>
+                        <span class="text-h8"> 
+                            Orders: {{statisticsTotal.nbOrderPanding}}
+                        </span>
+                    </v-card-text>
+                </v-card>
+            </v-col>
+            <v-col cols="6" sm="3"> 
+                <v-card class="elevation-1 rounded-xl"> 
+                    <v-card-title>
+                    <v-icon color="green"> 
+                    </v-icon>
+                        Complited
+                    </v-card-title>
+                    <v-card-subtitle>
+                        <span class="text-h5"> 
+                            {{statisticsTotal.montantComplited}} DA
+                        </span>
+                    </v-card-subtitle>
+                    <v-card-text class="d-flex justify-space-between"> 
+                        <span class="text-h8"> 
+                            Montant
+                        </span>
+                        <span class="text-h8"> 
+                            Orders: {{statisticsTotal.nbOrderComplited}}
+                        </span>
+                    </v-card-text>
+                </v-card>
+            </v-col>
+            <v-col cols="6" sm="3"> 
+                <v-card class="elevation-1 rounded-xl"> 
+                    <v-card-title>
+                    <v-icon color="red"> 
+                    </v-icon>
+                        Rejected
+                    </v-card-title>
+                    <v-card-subtitle>
+                        <span class="text-h5"> 
+                            {{statisticsTotal.montantRejected}} DA
+                        </span>
+                    </v-card-subtitle>
+                    <v-card-text class="d-flex justify-space-between"> 
+                        <span class="text-h8"> 
+                            Montant
+                        </span>
+                        <span class="text-h8"> 
+                            Orders: {{statisticsTotal.nbOrderRejected}}
+                        </span>
+                    </v-card-text>
+                </v-card>
+            </v-col>
+        </v-row>
+        </div>
         <v-data-table 
         :headers="headers" 
         :items="orders" 
@@ -478,6 +598,13 @@ export default {
     snackbarColor:'success',
     snackbarText:'',
 
+    filterage:{ 
+    dateAfter : new Date(),
+    dateBefor : new Date(new Date().setDate(new Date().getDate() - 30)),
+    },
+    users:{},
+    statisticsTotal:{},
+
     headers: [
                 { text: 'Full Name', value: 'client' },
                 { text: 'Phone', value: 'phone' },
@@ -540,6 +667,9 @@ export default {
         })    
         db.listDocuments('delivered', 'apis').then((data) => {
                 this.api = data.documents
+        })
+        db.listDocuments('delivered', 'users').then((data) => {
+                this.users = data.documents
         })
     },
     newOrder(){ 
@@ -886,6 +1016,18 @@ export default {
         else if (data == 'complited') return 'green'
         else return 'gray'
       },
+
+    statistics (){ 
+        const orders = this.orders.filter(item => ((item.$createdAt == this.filterage.dateAfter || item.$createdAt == this.filterage.dateBefor || this.filterage.dateAfter > item.$createdAt || this.filterage.dateBefor < item.$createdAt)
+        && this.filterage.user == item.user_id && this.filterage.api_token == item.api_token ))
+
+        this.statisticsTotal = {...this.statisticsTotal,
+            nbOrderRejected:12, montantRejected:520,
+            nbOrderComplited:12, montantComplited:520,
+            nbOrderProcess:12, montantProcess:520,
+            nbOrderPanding:12, montantPanding:520,
+        } 
+    }  
 
   },
 }
