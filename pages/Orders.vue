@@ -4,20 +4,20 @@
         
         <v-row class="my-4">
             <v-col cols="6" sm="3"> 
-                <v-text-field  type="date" v-model="statisticsTotal.dateBefor" :value="statisticsTotal.dateBefor"
+                <v-text-field  type="date" v-model="filterage.dateBefor" :value="filterage.dateBefor"
                     label="Star Date"></v-text-field> 
             </v-col> 
             <v-col cols="6" sm="3"> 
-                <v-text-field  type="date"  v-model="statisticsTotal.dateAfter" :value="statisticsTotal.dateAfter"
+                <v-text-field  type="date"  v-model="filterage.dateAfter" :value="filterage.dateAfter"
                     label="End Date"></v-text-field> 
             </v-col>
             <v-col cols="6" sm="3"> 
-                <v-select v-model="statisticsTotal.api_token" :items="api"
+                <v-select v-model="filterage.api_token" :items="api"
                     item-text="name" item-value="api_token" label="Select an option">
                 </v-select>
             </v-col>
             <v-col cols="6" sm="3"> 
-                <v-select v-model="statisticsTotal.user" :items="users"
+                <v-select v-model="filterage.user" :items="users"
                     item-text="username" item-value="$id" label="Select an User">
                 </v-select>
             </v-col> 
@@ -69,7 +69,7 @@
                             Montant
                         </span>
                         <span class="text-h8"> 
-                            Orders: {{statisticsTotal.nbOrderPanding}}
+                            Orders: {{statisticsTotal.nbOrderProcess}}
                         </span>
                     </v-card-text>
                 </v-card>
@@ -582,6 +582,7 @@
 
 <script>
 
+import moment from 'moment'
 import { db, Query, ID, storage } from "../appwrite.js"
 import wilaya from '@/assets/Wilaya-Of-Algeria-master/Wilaya_Of_Algeria.json'
 import commune from '@/assets/Wilaya-Of-Algeria-master/CommuneOfAlgeria.json'
@@ -599,8 +600,8 @@ export default {
     snackbarText:'',
 
     filterage:{ 
-    dateAfter : new Date(),
-    dateBefor : new Date(new Date().setDate(new Date().getDate() - 30)),
+    dateAfter : moment(new Date()).format('L'),
+    dateBefor : moment(new Date(new Date().setDate(new Date().getDate() - 30))).format('L'),
     },
     users:{},
     statisticsTotal:{},
@@ -642,6 +643,7 @@ export default {
   },
   mounted(){ 
       this.getDataInitial()
+      this.statistics()
   },
 
   methods: {
@@ -667,9 +669,15 @@ export default {
         })    
         db.listDocuments('delivered', 'apis').then((data) => {
                 this.api = data.documents
+                if(this.api){ 
+                    this.filterage.api_token = this.api[0].api_token
+                }
         })
         db.listDocuments('delivered', 'users').then((data) => {
                 this.users = data.documents
+                if(this.users){ 
+                    this.filterage.user = this.users[0].$id
+                }
         })
     },
     newOrder(){ 
@@ -1018,14 +1026,15 @@ export default {
       },
 
     statistics (){ 
-        const orders = this.orders.filter(item => ((item.$createdAt == this.filterage.dateAfter || item.$createdAt == this.filterage.dateBefor || this.filterage.dateAfter > item.$createdAt || this.filterage.dateBefor < item.$createdAt)
+
+        const orders = this.orders.filter(item => (((item.$createdAt == this.filterage.dateAfter || item.$createdAt == this.filterage.dateBefor) || (this.filterage.dateAfter > item.$createdAt && this.filterage.dateBefor < item.$createdAt))
         && this.filterage.user == item.user_id && this.filterage.api_token == item.api_token ))
 
-        this.statisticsTotal = {...this.statisticsTotal,
-            nbOrderRejected:12, montantRejected:520,
-            nbOrderComplited:12, montantComplited:520,
-            nbOrderProcess:12, montantProcess:520,
-            nbOrderPanding:12, montantPanding:520,
+        this.statisticsTotal = {
+            nbOrderRejected:orders.filter(item => (item.statut == 'rejected')).length, montantRejected:orders.filter(item => (item.statut == 'rejected')).reduce((acc, item) => acc + Number(item.montant), 0),
+            nbOrderComplited:orders.filter(item => (item.statut == 'complited')).length, montantComplited:orders.filter(item => (item.statut == 'complited')).reduce((acc, item) => acc + Number(item.montant), 0),
+            nbOrderProcess:orders.filter(item => (item.statut == 'process')).length, montantProcess:orders.filter(item => (item.statut == 'process')).reduce((acc, item) => acc + Number(item.montant), 0),
+            nbOrderPanding:orders.filter(item => (item.statut == 'panding')).length, montantPanding:orders.filter(item => (item.statut == 'panding')).reduce((acc, item) => acc + Number(item.montant), 0),
         } 
     }  
 
