@@ -156,6 +156,7 @@
 <script>
 import { db, Query, ID ,storage } from "../appwrite.js"
 export default {
+    middleware: 'validator',
     data() {
         return {
             search: '',

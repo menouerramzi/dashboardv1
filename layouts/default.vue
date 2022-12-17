@@ -6,12 +6,14 @@
         <v-row class="ma-1">
           <v-col cols="8" class="py-3">
             <div class="text-caption">Welcome Back</div>
-            <div class="text-h6">Mahdi H.</div>
+            <div class="text-h8">{{$store.state.auth.user.username}}</div>
           </v-col>
           <v-col cols="4" class="py-3">
             <v-card height="50" width="50" class="rounded-1">
 
-              <v-card-subtitle class="red  white--text">58</v-card-subtitle>
+              <v-card-subtitle class="red  white--text"> 
+                <v-icon small> mdi-flash</v-icon>
+              </v-card-subtitle>
             </v-card>
           </v-col>
         </v-row>
@@ -19,21 +21,24 @@
 
 
       <v-list class="">
-        <v-list-item v-for="(item, i) in items" :key="i" :to="item.to" router exact>
-          <v-list-item-action>
-            <v-icon>{{ item.icon }}</v-icon>
-          </v-list-item-action>
-          <v-list-item-content>
-            <v-list-item-title>{{ item.title }}</v-list-item-title>
-          </v-list-item-content>
+        <v-list-item v-for="(item, i) in items" :key="i" :to="item.to" router exact v-if="(($store.state.auth.user.role == 'admin' && (item.role > 0)) || $store.state.auth.user.role == 'validator' && (item.role > 100) || $store.state.auth.user.role == 'user' && (item.role > 110))">
+
+            <v-list-item-action>
+              <v-icon>{{ item.icon }}</v-icon>
+            </v-list-item-action>
+            <v-list-item-content>
+              <v-list-item-title>{{ item.title }}</v-list-item-title>
+            </v-list-item-content>
+          
         </v-list-item>
 
         <v-list-item @click="logout">
           <v-list-item-action>
-            <v-icon>{{'mdi-exit'}}</v-icon>
+            <v-icon> mdi-exit-to-app</v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title> Logout</v-list-item-title>
+            <v-list-item-title>  
+              Logout</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
       </v-list>
@@ -77,31 +82,29 @@ export default {
       drawer: false,
       items: [
         {
-          icon: 'mdi-home',
-          title: 'Welcome',
-          to: '/'
+          icon: 'mdi-cube',
+          title: 'Manage Orders',
+          to: '/orders',
+          role: 111
+        },
+        {
+          icon: 'mdi-apps',
+          title: 'Manage Products',
+          to: '/products',
+          role: 110
         },
         {
           icon: 'mdi-account-group',
-          title: 'Orders',
-          to: '/orders'
-        },
-        {
-          icon: 'mdi-account-plus',
-          title: 'Manage Products',
-          to: '/products'
-        },
-        {
-          icon: 'mdi-account-plus',
           title: 'Manage Users',
-          to: '/users'
+          to: '/users',
+          role: 100
         },
         {
-          icon: 'mdi-account-plus',
-          title: 'Login Page',
-          to: '/login'
-
-        }
+          icon: 'mdi-api',
+          title: 'Manage Apis',
+          to: '/apis',
+          role: 100
+        },
       ],
       
 

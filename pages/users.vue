@@ -140,6 +140,7 @@
 <script>
 import { db, Query, ID, account } from "../appwrite.js"
 export default {
+    middleware: 'admin',
     data() {
         return {
             search: '',

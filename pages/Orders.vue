@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div>
+        <div v-if="($store.state.auth.user.role == 'admin')" >
         
         <v-row class="my-4">
             <v-col cols="6" sm="3"> 
@@ -28,12 +28,13 @@
                       Statistics
                 </v-btn>
         </div>
-        <v-row class="my-4"> 
+        <v-row   v-if="($store.state.auth.user.role == 'admin')" class="my-4"> 
             
             <v-col cols="6" sm="3"> 
                 <v-card class="elevation-1 rounded-xl"> 
                     <v-card-title>
-                    <v-icon color=""> 
+                    <v-icon small class="mr-2" color=""> 
+                        mdi-clock-outline
                     </v-icon>
                         Pandding
                     </v-card-title>
@@ -55,7 +56,8 @@
             <v-col cols="6" sm="3"> 
                 <v-card class="elevation-1 rounded-xl"> 
                     <v-card-title>
-                    <v-icon color="orange"> 
+                    <v-icon small class="mr-2" color="orange"> 
+                        mdi-flash
                     </v-icon>
                         Process
                     </v-card-title>
@@ -77,7 +79,8 @@
             <v-col cols="6" sm="3"> 
                 <v-card class="elevation-1 rounded-xl"> 
                     <v-card-title>
-                    <v-icon color="green"> 
+                    <v-icon small class="mr-2" color="green"> 
+                        mdi-check
                     </v-icon>
                         Complited
                     </v-card-title>
@@ -99,7 +102,8 @@
             <v-col cols="6" sm="3"> 
                 <v-card class="elevation-1 rounded-xl"> 
                     <v-card-title>
-                    <v-icon color="red"> 
+                    <v-icon small class="mr-2" color="red"> 
+                        mdi-close
                     </v-icon>
                         Rejected
                     </v-card-title>
@@ -504,7 +508,7 @@
                                 <v-btn v-if="!readonly" color="primary" text @click="createOrder()">
                                     {{(editedIndex != -1)?'Update':'Create'}}
                                 </v-btn>
-                                <div v-else>  
+                                <div v-else-if="($store.state.auth.user.role == 'admin' || $store.state.auth.user.role == 'validator')">  
                                     <v-btn v-if="(order.statut == 'panding')" color="orange" text @click="validationOrder()">
                                         Valide
                                     </v-btn>
@@ -514,7 +518,14 @@
                                     <v-btn v-if="(order.statut == 'prossece')" color="red" text @click="changeStateOrder('rejected')">
                                         Complated
                                     </v-btn>
-                                  
+                                    <a :href="('https://app.noest-dz.com/download/etiq/'+order.tracking)" target="blanc"> 
+                                    <v-btn> 
+                                        <v-icon small class="mr-2"> 
+                                            mdi-printer
+                                        </v-icon>
+                                        Print
+                                    </v-btn>
+                                    </a>
                                 </div>
                               
                             </v-card-actions>
@@ -549,13 +560,13 @@
                 </v-chip>
             </template>
             <template v-slot:item.actions="{ item }">
-                <v-icon small class="mr-2" @click="(readonly = true) , editItem(item)">
+                <v-icon  small class="mr-2" @click="(readonly = true) , editItem(item)">
                     mdi-eye
                 </v-icon>
-                <v-icon small class="mr-2" @click="(readonly = false) ,editItem(item)">
+                <v-icon v-if="item.statut == 'panding'" small class="mr-2" @click="(readonly = false) ,editItem(item)">
                     mdi-pencil
                 </v-icon>
-                <v-icon small class="mr-2" @click="deleteItem(item)">
+                <v-icon v-if="item.statut == 'panding'" small class="mr-2" @click="deleteItem(item)">
                     mdi-delete
                 </v-icon>
             </template>
@@ -638,6 +649,7 @@ export default {
         },
     },
 
+
   watch: {
     
   },
@@ -645,7 +657,6 @@ export default {
       this.getDataInitial()
       this.statistics()
   },
-
   methods: {
 
     getDataInitial(){ 
@@ -931,17 +942,6 @@ export default {
 
             }
     },
-
-
-
-
-
-
-
-
-
-
-
 
 
     initial(){

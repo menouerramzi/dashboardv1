@@ -94,6 +94,7 @@
 <script>
 import { db, Query, ID } from "../appwrite.js"
 export default {
+    middleware: 'admin',
     data() {
         return {
             search: '',

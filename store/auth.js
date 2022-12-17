@@ -12,6 +12,9 @@ export const mutations = {
 
 }
 export const getters = {
+    GET_USER(state){ 
+        return state.user
+    }
 
 }
 export const actions = {
