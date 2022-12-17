@@ -81,7 +81,7 @@
                                 <v-btn color="blue darken-1" text @click="close">
                                     Cancel
                                 </v-btn>
-                                <v-btn  color="primary" text @click="createUser()">
+                                <v-btn  color="primary" :loading="loadingBtn" :disabled="loadingBtn" text @click="createUser()">
                                     {{(editedIndex != -1)?'Update':'Create'}}
                                 </v-btn>
                               
@@ -100,8 +100,8 @@
                             </v-card-subtitle>
                             <v-card-actions>
                                 <v-spacer></v-spacer>
-                                <v-btn color="blue darken-1" text @click="closeDelete">Cancel</v-btn>
-                                <v-btn color="primary" text @click="deleteUser()">Delete</v-btn>
+                                <v-btn color="blue darken-1"  text @click="closeDelete">Cancel</v-btn>
+                                <v-btn color="primary" :loading="loadingBtn" :disabled="loadingBtn" text @click="deleteUser()">Delete</v-btn>
                                 <v-spacer></v-spacer>
                             </v-card-actions>
                         </v-card>
@@ -154,6 +154,7 @@ export default {
             loading: true,
             dialogDelete: false,
             dialogPass: false,
+            loadingBtn:false,
             isPasswordVisible:false,
             headers: [
                 {
@@ -191,14 +192,21 @@ export default {
     },
     methods: {
       
-        deleteUser() {       
+        deleteUser() {    
+                this.loadingBtn = true   
                 this.users.splice(this.editedIndex, 1)
                 this.closeDelete()
                 db.deleteDocument('delivered', 'users', this.UserID).then(() => { 
+                    this.loadingBtn = false
                     this.snackbar= true
                     this.snackbarColor ='success'
                     this.snackbarText= 'success'
-                })
+                }).catch((err) => { 
+                            this.loadingBtn = false
+                            this.snackbar= true
+                            this.snackbarColor ='error'
+                            this.snackbarText= err 
+                });
         },
         newUser() {
             this.editedIndex = -1
@@ -224,7 +232,7 @@ export default {
         //     }
         // },
         createUser() {
-
+            this.loadingBtn = true
             if (this.editedIndex > -1) {
                 Object.assign(this.users[this.editedIndex], this.user)
 
@@ -234,10 +242,16 @@ export default {
                         user_guid: this.user.user_guid,
                         role: this.user.role 
                     }).then(() => { 
+                        this.loadingBtn = false
                         this.snackbar= true
                         this.snackbarColor ='success'
                         this.snackbarText= 'success'
-                    })
+                    }).catch((err) => { 
+                            this.loadingBtn = false
+                            this.snackbar= true
+                            this.snackbarColor ='error'
+                            this.snackbarText= err 
+                        });
             }else {
                 if (this.passConf == this.pass) {
                 account.create(ID.unique(), this.user.email, this.user.pass, this.user.username)
@@ -249,18 +263,21 @@ export default {
                             role: this.user.role 
                         })
                         .then((data) => {
+                            this.loadingBtn = false
                             this.users.push(data)
                             this.snackbar= true
                             this.snackbarColor ='success'
                             this.snackbarText= 'success'
                         })
                         .catch((err) => { 
+                            this.loadingBtn = false
                             this.snackbar= true
                             this.snackbarColor ='error'
                             this.snackbarText= err 
                         });
                     })
                 }else{ 
+                    this.loadingBtn = false
                     this.snackbar= true
                     this.snackbarColor ='error'
                     this.snackbarText= 'check your password if the same in confermation password' 

@@ -93,7 +93,7 @@
                                 <v-btn color="blue darken-1" text @click="close">
                                     Cancel
                                 </v-btn>
-                                <v-btn  color="primary" text @click="createProduct()">
+                                <v-btn  color="primary" :loading="loadingBtn" :disabled="loadingBtn" text @click="createProduct()">
                                     {{(editedIndex != -1)?'Update':'Create'}}
                                 </v-btn>
                               
@@ -113,7 +113,7 @@
                             <v-card-actions>
                                 <v-spacer></v-spacer>
                                 <v-btn color="blue darken-1" text @click="closeDelete">Cancel</v-btn>
-                                <v-btn color="primary" text @click="deleteProduct()">Delete</v-btn>
+                                <v-btn color="primary" :loading="loadingBtn" :disabled="loadingBtn" text @click="deleteProduct()">Delete</v-btn>
                                 <v-spacer></v-spacer>
                             </v-card-actions>
                         </v-card>
@@ -169,6 +169,7 @@ export default {
             dialog: false,
             loading: true,
             dialogDelete: false,
+            loadingBtn:false,
             headers: [
                 {
                     text: 'image',
@@ -232,10 +233,12 @@ export default {
             }
         },
         deleteProduct() {
+            this.loadingBtn = true
             storage.deleteFile('productsimg', this.product.img)
             db.listDocuments('delivered', 'variations', [
                 Query.equal('productID', [this.ProductID])
             ]).then((data) => {
+                this.loadingBtn = false
                 const variations = data.documents
                 variations.forEach(element => {
                     db.deleteDocument('delivered', 'variations', element.$id)
@@ -244,6 +247,11 @@ export default {
                 db.deleteDocument('delivered', 'products', this.ProductID).then(() => { 
                 })
                 this.closeDelete()
+            }).catch(err => { 
+                this.loadingBtn = false
+                this.snackbar= true
+                this.snackbarColor ='error'
+                this.snackbarText= err
             })
         },
         newProduct() {
@@ -270,6 +278,7 @@ export default {
         },
 
         async createProduct() {
+            this.loadingBtn = true
             let img = {}
             let imgUrl = ''
             if (this.editedIndex > -1) {
@@ -288,10 +297,16 @@ export default {
                         imgUrl: imgUrl,
                         img: img.$id
                     }).then(() => { 
+                        this.loadingBtn = false
                         this.snackbar= true
                         this.snackbarColor ='success'
                         this.snackbarText= 'success'
-                    })
+                    }).catch((err) => { 
+                        this.loadingBtn = false
+                        this.snackbar= true
+                        this.snackbarColor ='error'
+                        this.snackbarText= err 
+                    });
             } else {
                 if(this.product.imgInput){ 
 
@@ -316,17 +331,20 @@ export default {
                                 price: element.price,
                                 productID: data.$id
                             }).catch((err) => {  
+                                this.loadingBtn = false
                                 this.snackbar= true
                                 this.snackbarColor ='error'
                                 this.snackbarText= err
                              })
                         });
+                        this.loadingBtn = false
                         this.products.push(data)
                         this.snackbar= true
                         this.snackbarColor ='success'
                         this.snackbarText= 'success'
                     })
                     .catch((err) => { 
+                        this.loadingBtn = false
                         this.snackbar= true
                         this.snackbarColor ='error'
                         this.snackbarText= err 

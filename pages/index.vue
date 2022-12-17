@@ -24,7 +24,7 @@
       </v-row>
       <div class="d-flex"> 
           <v-spacer></v-spacer>
-              <v-btn color="primary" dark @click="statistics()">
+              <v-btn color="primary" :loading="loadingBtn" :disabled="loadingBtn" dark @click="statistics()">
                     Statistics
               </v-btn>
       </div>
@@ -505,19 +505,27 @@
                               <v-btn color="blue darken-1" text @click="(DialogOrder = false)">
                                   Cancel
                               </v-btn>
-                              <v-btn v-if="!readonly" color="primary" text @click="createOrder()">
+                              <v-btn v-if="!readonly" :loading="loadingBtn" :disabled="loadingBtn" color="primary" text @click="createOrder()">
                                   {{(editedIndex != -1)?'Update':'Create'}}
                               </v-btn>
                               <div v-else-if="($store.state.auth.user.role == 'admin' || $store.state.auth.user.role == 'validator')">  
-                                  <v-btn v-if="(order.statut == 'panding')" color="orange" text @click="validationOrder()">
+                                  <v-btn v-if="(order.statut == 'panding')" :loading="loadingBtn" :disabled="loadingBtn" color="orange" text @click="validationOrder()">
                                       Valide
                                   </v-btn>
-                                  <v-btn v-if="(order.statut == 'prossece')" color="green" text @click="changeStateOrder('complated')">
+                                  <v-btn v-if="(order.statut == 'prossece')" :loading="loadingBtn" :disabled="loadingBtn" color="green" text @click="changeStateOrder('complated')">
                                       Complated
                                   </v-btn>
-                                  <v-btn v-if="(order.statut == 'prossece')" color="red" text @click="changeStateOrder('rejected')">
+                                  <v-btn v-if="(order.statut == 'prossece')" :loading="loadingBtn" :disabled="loadingBtn" color="red" text @click="changeStateOrder('rejected')">
                                       Complated
                                   </v-btn>
+                                  <a :href="('https://app.noest-dz.com/download/etiq/'+order.tracking)" target="blanc"> 
+                                  <v-btn> 
+                                      <v-icon small class="mr-2"> 
+                                          mdi-printer
+                                      </v-icon>
+                                      Print
+                                  </v-btn>
+                                  </a>
                               </div>
                             
                           </v-card-actions>
@@ -535,7 +543,7 @@
                           <v-card-actions>
                               <v-spacer></v-spacer>
                               <v-btn color="blue darken-1" text @click="(dialogDelete = false)">Cancel</v-btn>
-                              <v-btn color="primary" text @click="deleteOrder()">Delete</v-btn>
+                              <v-btn color="primary" text :loading="loadingBtn" :disabled="loadingBtn" @click="deleteOrder()">Delete</v-btn>
                               <v-spacer></v-spacer>
                           </v-card-actions>
                       </v-card>
@@ -597,6 +605,7 @@ data: () => ({
   itemsAddress : wilaya,
   loading: true,
   readonly:false,
+  loadingBtn:false,
 
   snackbar:false,
   snackbarColor:'success',
@@ -653,7 +662,12 @@ methods: {
 
   getDataInitial(){ 
       db.listDocuments('delivered', 'orders').then((data) => {
-              this.orders = data.documents
+              if(this.$store.state.auth.user.role == 'user'){ 
+                  this.orders = data.documents.filter(item => (item.user_id == this.$store.state.auth.user.$id ))
+              }else{ 
+
+                  this.orders = data.documents
+              }
               this.loading = false
       })
       db.listDocuments('delivered', 'products').then((data) => {
@@ -713,13 +727,16 @@ methods: {
   },
 
   validationOrder(){
+      this.loadingBtn = true
       this.$axios.post('https://app.noest-dz.com/api/public/valid/order', {        
               api_token:this.order.api_token,
               user_guid: this.order.user_guid,
               tracking: this.order.tracking
               }).then(() => { 
                   this.changeStateOrder('prossece')
+                  this.loadingBtn = false
               }).catch(err => { 
+                      this.loadingBtn = false
                       this.snackbar= true
                       this.snackbarColor ='error'
                       this.snackbarText= err
@@ -733,22 +750,26 @@ methods: {
   },
   
   deleteOrder(){ 
+      this.loadingBtn = true
       this.$axios.post('https://app.noest-dz.com/api/public/delete/order', {        
               api_token:this.order.api_token,
               user_guid: this.order.user_guid,
               tracking: this.order.tracking
               }).then(data => { 
                   db.deleteDocument('delivered', 'orders', this.order.$id).then(()=>{
+                      this.loadingBtn = false
                       this.snackbar= true
                       this.snackbarColor ='success'
                       this.snackbarText= 'success'
                       this.dialogDelete = false
                   }).catch(err => { 
+                      this.loadingBtn = false
                       this.snackbar= true
                       this.snackbarColor ='error'
                       this.snackbarText= err
                   })
               }).catch(err => { 
+                      this.loadingBtn = false    
                       this.snackbar= true
                       this.snackbarColor ='error'
                       this.snackbarText= err
@@ -756,11 +777,13 @@ methods: {
   },
   // https://app.noest-dz.com/download/etiq/
   changeStateOrder(state){ 
+      this.loadingBtn = true
       Object.assign(this.orders[this.editedIndex], {...this.order, statut:state})
       db.updateDocument('delivered', 'orders', this.order.$id,
                   {
                       statut:state,
                   }).then(() => { 
+                      this.loadingBtn = false
                       this.snackbar= true
                       this.snackbarColor ='success'
                       this.snackbarText= 'success'
@@ -802,6 +825,7 @@ methods: {
                   })
 
                   }).catch(err => { 
+                      this.loadingBtn = false     
                       this.snackbar= true
                       this.snackbarColor ='error'
                       this.snackbarText= err
@@ -809,6 +833,7 @@ methods: {
   },
 
   createOrder(){ 
+      this.loadingBtn = true
       const produit = this.globalProducts.map(item => item.model.map(item => item.text)+' : '+item.model[2].quantity)
           
       if (this.editedIndex > -1) {
@@ -853,21 +878,25 @@ methods: {
                     statut:'panding',
                     tracking:data.data.tracking
                   }).then(() => { 
+                      this.loadingBtn = false
                       this.snackbar= true
                       this.snackbarColor ='success'
                       this.snackbarText= 'success'
                   }).catch(err => { 
+                      this.loadingBtn = false
                       this.snackbar= true
                       this.snackbarColor ='error'
                       this.snackbarText= err
                   })
               }).catch(err => { 
+                      this.loadingBtn = false
                       this.snackbar= true
                       this.snackbarColor ='error'
                       this.snackbarText= err
               })
 
               }).catch(err => { 
+                  this.loadingBtn = false
                   this.snackbar= true
                   this.snackbarColor ='error'
                   this.snackbarText= err
@@ -915,24 +944,28 @@ methods: {
                         statut:'panding',
                       })
                       .then((data) => { 
+                          this.loadingBtn = false
                           this.snackbar= true
                           this.snackbarColor ='success'
                           this.snackbarText= 'success'
                           this.DialogOrder = false
                           this.orders.push({...data})
 
-                      }).catch(err => { 
+                      }).catch(err => {
+                          this.loadingBtn = false 
                           this.snackbar= true
                           this.snackbarColor ='error'
                           this.snackbarText= err
                       })
               }).catch(err => { 
+                          this.loadingBtn = false
                           this.snackbar= true
                           this.snackbarColor ='error'
                           this.snackbarText= err
                       })
 
           }
+        
   },
 
 
@@ -1018,7 +1051,7 @@ methods: {
     },
 
   statistics (){ 
-
+      this.loadingBtn = true
       const orders = this.orders.filter(item => (((item.$createdAt == this.filterage.dateAfter || item.$createdAt == this.filterage.dateBefor) || (this.filterage.dateAfter > item.$createdAt && this.filterage.dateBefor < item.$createdAt))
       && this.filterage.user == item.user_id && this.filterage.api_token == item.api_token ))
 
@@ -1028,6 +1061,7 @@ methods: {
           nbOrderProcess:orders.filter(item => (item.statut == 'process')).length, montantProcess:orders.filter(item => (item.statut == 'process')).reduce((acc, item) => acc + Number(item.montant), 0),
           nbOrderPanding:orders.filter(item => (item.statut == 'panding')).length, montantPanding:orders.filter(item => (item.statut == 'panding')).reduce((acc, item) => acc + Number(item.montant), 0),
       } 
+      this.loadingBtn = false
   }  
 
 },

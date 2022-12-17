@@ -46,7 +46,7 @@
                   </nuxt-link>
                 </div>
   
-                <v-btn block color="primary" class="mt-6" style="max-width:80px;" @click="login">
+                <v-btn block color="primary" :loading="loadingBtn" :disabled="loadingBtn" class="mt-6" style="max-width:80px;" @click="login">
                    Login
                 </v-btn>
               </v-form>
@@ -85,12 +85,14 @@ export default {
             remember:true,
             isPasswordVisible:false,
             snackbarText:'',
-            snackbarColor:'success'
+            snackbarColor:'success',
+            loadingBtn:false,
         }
     },
     methods: {
         // function to Login and get session
         login() {
+          this.loadingBtn = true
             account.createEmailSession(this.email, this.password)
                 .then((session) => {
                    db.getDocument('delivered', 'users', session.userId)
@@ -104,15 +106,18 @@ export default {
 
                             this.$store.commit('auth/SET_UserInfo', userData)
                             this.$router.push('/')
+                            this.loadingBtn = false
 
                         })
                         .catch((err) => { 
+                            this.loadingBtn = false
                             this.snackbar = true
                             this.snackbarText = err
                             this.snackbarColor = 'error'
 
                          })
                 }).catch((err) => { 
+                            this.loadingBtn = false
                             this.snackbar = true
                             this.snackbarText = err
                             this.snackbarColor = 'error'

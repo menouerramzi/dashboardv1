@@ -36,7 +36,7 @@
                                 <v-btn color="blue darken-1" text @click="close">
                                     Cancel
                                 </v-btn>
-                                <v-btn  color="primary" text @click="createApi()">
+                                <v-btn  color="primary" :loading="loadingBtn" :disabled="loadingBtn" text @click="createApi()">
                                     {{(editedIndex != -1)?'Update':'Create'}}
                                 </v-btn>
                               
@@ -56,7 +56,7 @@
                             <v-card-actions>
                                 <v-spacer></v-spacer>
                                 <v-btn color="blue darken-1" text @click="closeDelete">Cancel</v-btn>
-                                <v-btn color="primary" text @click="deleteApi()">Delete</v-btn>
+                                <v-btn color="primary" :loading="loadingBtn" :disabled="loadingBtn" text @click="deleteApi()">Delete</v-btn>
                                 <v-spacer></v-spacer>
                             </v-card-actions>
                         </v-card>
@@ -105,6 +105,7 @@ export default {
             api: {},
             dialog: false,
             loading: true,
+            loadingBtn: false,
             dialogDelete: false,
             headers: [
                 {
@@ -142,14 +143,20 @@ export default {
       
     
         deleteApi() {
-           
+            this.loadingBtn = true
                 this.apis.splice(this.editedIndex, 1)
                 this.closeDelete()
                 db.deleteDocument('delivered', 'apis', this.ApiID).then(() => { 
+                    this.loadingBtn = false
                     this.snackbar= true
                     this.snackbarColor ='success'
                     this.snackbarText= 'success'
-                })
+                }).catch((err) => { 
+                        this.loadingBtn = false
+                        this.snackbar= true
+                        this.snackbarColor ='error'
+                        this.snackbarText= err 
+                    });
             
         },
         newApi() {
@@ -158,25 +165,33 @@ export default {
         },
         
         createApi() {
+            this.loadingBtn = true
 
             if (this.editedIndex > -1) {
                 Object.assign(this.apis[this.editedIndex], this.api)
                 db.updateDocument('delivered', 'apis', this.api.$id,
                     { name: this.api.name }).then(() => { 
+                        this.loadingBtn = false
                         this.snackbar= true
                         this.snackbarColor ='success'
                         this.snackbarText= 'success'
-                    })
+                    }).catch((err) => { 
+                        this.loadingBtn = false
+                        this.snackbar= true
+                        this.snackbarColor ='error'
+                        this.snackbarText= err 
+                    });
             } else {
                 db.createDocument('delivered', 'apis', 'unique()', { name: this.api.name })
                     .then((data) => {
-                      
+                        this.loadingBtn = false
                         this.apis.push(data)
                         this.snackbar= true
                         this.snackbarColor ='success'
                         this.snackbarText= 'success'
                     })
                     .catch((err) => { 
+                        this.loadingBtn = false
                         this.snackbar= true
                         this.snackbarColor ='error'
                         this.snackbarText= err 
