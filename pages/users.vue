@@ -36,7 +36,7 @@
                                             </v-text-field>
                                         </v-col>
                                         <v-col v-else cols="12" class="d-flex"> 
-                                            <v-text-field :type="isPasswordVisible ? 'text' : 'password'" v-model="user.password" :value="user.password"
+                                            <v-text-field :type="isPasswordVisible ? 'text' : 'password'"  :disabled="(editedIndex != -1)" S v-model="user.password" :value="user.password"
                                                 label="Password">
                                             </v-text-field>
                                             <v-btn class="my-4" icon @click="(isPasswordVisible = !isPasswordVisible)"> 
