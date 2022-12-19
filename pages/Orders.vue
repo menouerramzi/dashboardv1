@@ -245,6 +245,8 @@
                                             + add product
                                         </v-btn>
                                         <div class="d-flex" v-for="(globalProduct, global) in globalProducts" :key="(global)"> 
+                                            <v-row> 
+                                            <v-col cols="12" sm="6"> 
                                             <v-combobox
                                             v-model="globalProduct.model"
                                             :filter="filter"
@@ -318,28 +320,33 @@
                                             </template>
                                         </v-combobox>
 
-                                        <v-row v-if="(globalProduct.model.length == 3)">
-                                                <v-col class="d-flex mx-2">
-                                                    <v-text-field :readonly="readonly" type="number" outlined v-model="globalProduct.model[2].quantity"
-                                                        label="Quantity">
-                                                    </v-text-field>
-                                                </v-col>
-                                                <v-col v-if="!readonly" class="d-flex  ">
-                                                    <v-card-text>Stock :
-                                                    </v-card-text>
-                                                    <v-card-subtitle v-model="globalProduct.model[2].stock">
-                                                    {{globalProduct.model[2].stock}}
-                                                    </v-card-subtitle>
-                                                </v-col>
-                                                <v-col class="d-flex  ">
-                                                    <v-card-text>Price :
-                                                    </v-card-text>
-                                                    <v-card-subtitle v-model="globalProduct.model[2].price">
-                                                    {{globalProduct.model[2].price}}
-                                                    </v-card-subtitle>
-                                                </v-col>
+    </v-col>
+    <v-col cols="12" sm="6"> 
 
-                                            </v-row>
+        <v-row v-if="(globalProduct.model.length == 3)">
+            <v-col class="d-flex mx-2">
+                <v-text-field :readonly="readonly" type="number" outlined v-model="globalProduct.model[2].quantity"
+                label="Quantity">
+            </v-text-field>
+        </v-col>
+        <v-col v-if="!readonly" class="d-flex  ">
+            <v-card-text>Stock :
+            </v-card-text>
+            <v-card-subtitle v-model="globalProduct.model[2].stock">
+                {{globalProduct.model[2].stock}}
+            </v-card-subtitle>
+        </v-col>
+        <v-col class="d-flex  ">
+            <v-card-text>Price :
+            </v-card-text>
+            <v-card-subtitle v-model="globalProduct.model[2].price">
+                {{globalProduct.model[2].price}}
+            </v-card-subtitle>
+        </v-col>
+        
+    </v-row>
+</v-col>
+</v-row>
                                             <v-btn v-if="globalProduct.model[0]" icon class="my-2 mx-2" 
                                                             @click="((menu = {img:globalProduct.model[0].img}), dialog = true)"
                                             >
@@ -1018,7 +1025,7 @@ export default {
         }else if(this.globalProducts[global].model.length == 2){ 
             this.globalProducts[global].items = [{ header: 'Select an size or create one' }]
                         this.variations.filter(item => (item.product_id == this.globalProducts[global].model[0].id && item.color == this.globalProducts[global].model[1].text )).forEach(item => { 
-                            this.globalProducts[global].items.push({id : item.id, text : item.size, price : item.price, stock : item.stock, quantity : 1 })
+                            this.globalProducts[global].items.push({id : item.id, text : item.size, price : item.price, stock: item.stock, quantity: 1 })
                         })
         }else if (this.globalProducts[global].model.length == 3){ 
             this.globalProducts[global].items = []
