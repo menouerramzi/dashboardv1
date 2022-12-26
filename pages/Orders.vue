@@ -36,11 +36,11 @@
                     <v-icon small class="mr-2" color=""> 
                         mdi-clock-outline
                     </v-icon>
-                        Pandding
+                        Pending
                     </v-card-title>
                     <v-card-subtitle>
                         <span class="text-h5"> 
-                            {{statisticsTotal.montantPanding}} DA
+                            {{statisticsTotal.montantPending}} DA
                         </span>
                     </v-card-subtitle>
                     <v-card-text class="d-flex justify-space-between"> 
@@ -48,7 +48,7 @@
                             Montant
                         </span>
                         <span class="text-h8"> 
-                            Orders: {{statisticsTotal.nbOrderPanding}}
+                            Orders: {{statisticsTotal.nbOrderPending}}
                         </span>
                     </v-card-text>
                 </v-card>
@@ -516,14 +516,14 @@
                                     {{(editedIndex != -1)?'Update':'Create'}}
                                 </v-btn>
                                 <div v-else-if="($store.state.auth.user.role == 'admin' || $store.state.auth.user.role == 'validator')">  
-                                    <v-btn v-if="(order.statut == 'panding')" :loading="loadingBtn" :disabled="loadingBtn" color="orange" text @click="validationOrder()">
+                                    <v-btn v-if="(order.statut == 'pending')" :loading="loadingBtn" :disabled="loadingBtn" color="orange" text @click="validationOrder()">
                                         Valide
                                     </v-btn>
-                                    <v-btn v-if="(order.statut == 'prossece')" :loading="loadingBtn" :disabled="loadingBtn" color="green" text @click="changeStateOrder('complated')">
-                                        Complated
+                                    <v-btn v-if="(order.statut == 'process')" :loading="loadingBtn" :disabled="loadingBtn" color="green" text @click="changeStateOrder('complited')">
+                                        complited
                                     </v-btn>
-                                    <v-btn v-if="(order.statut == 'prossece')" :loading="loadingBtn" :disabled="loadingBtn" color="red" text @click="changeStateOrder('rejected')">
-                                        Complated
+                                    <v-btn v-if="(order.statut == 'process')" :loading="loadingBtn" :disabled="loadingBtn" color="red" text @click="changeStateOrder('rejected')">
+                                        Rejected
                                     </v-btn>
                                     <a :href="('https://app.noest-dz.com/download/etiq/'+order.tracking)" target="blanc"> 
                                     <v-btn> 
@@ -558,6 +558,12 @@
                    
                 </v-toolbar>
             </template>
+            <template v-slot:item.user_id="{ item }">
+
+                    {{ users?.find(user => (user.$id == item.user_id))?.username }}
+
+            </template>
+
             <template v-slot:item.statut="{ item }">
                 <v-chip
                     :color="getColor(item.statut)"
@@ -570,10 +576,10 @@
                 <v-icon  small class="mr-2" @click="(readonly = true) , editItem(item)">
                     mdi-eye
                 </v-icon>
-                <v-icon v-if="item.statut == 'panding'" small class="mr-2" @click="(readonly = false) ,editItem(item)">
+                <v-icon v-if="item.statut == 'pending'" small class="mr-2" @click="(readonly = false) ,editItem(item)">
                     mdi-pencil
                 </v-icon>
-                <v-icon v-if="item.statut == 'panding'" small class="mr-2" @click="deleteItem(item)">
+                <v-icon v-if="item.statut == 'pending'" small class="mr-2" @click="deleteItem(item)">
                     mdi-delete
                 </v-icon>
             </template>
@@ -626,6 +632,7 @@ export default {
     statisticsTotal:{},
 
     headers: [
+                { text: 'User', value: 'user_id' },
                 { text: 'Full Name', value: 'client' },
                 { text: 'Phone', value: 'phone' },
                 { text: 'Montant', value: 'montant' },
@@ -668,6 +675,14 @@ export default {
   methods: {
 
     getDataInitial(){ 
+
+        db.listDocuments('delivered', 'users').then((data) => {
+                this.users = data.documents
+                if(this.users){ 
+                    this.filterage.user = this.users[0].$id
+                }
+        })
+
         db.listDocuments('delivered', 'orders').then((data) => {
                 if(this.$store.state.auth.user.role == 'user'){ 
                     this.orders = data.documents.filter(item => (item.user_id == this.$store.state.auth.user.$id ))
@@ -695,12 +710,6 @@ export default {
                 this.api = data.documents
                 if(this.api){ 
                     this.filterage.api_token = this.api[0].api_token
-                }
-        })
-        db.listDocuments('delivered', 'users').then((data) => {
-                this.users = data.documents
-                if(this.users){ 
-                    this.filterage.user = this.users[0].$id
                 }
         })
     },
@@ -740,7 +749,7 @@ export default {
                 user_guid: this.order.user_guid,
                 tracking: this.order.tracking
                 }).then(() => { 
-                    this.changeStateOrder('prossece')
+                    this.changeStateOrder('process')
                     this.loadingBtn = false
                 }).catch(err => { 
                         this.loadingBtn = false
@@ -882,7 +891,7 @@ export default {
                       poids:Number(this.order.poids) ,
                       stop_desk:Number(this.order.stop_desk) ,
                       api_token:this.order.api_token,
-                      statut:'panding',
+                      statut:'pending',
                       tracking:data.data.tracking
                     }).then(() => { 
                         this.loadingBtn = false
@@ -948,7 +957,7 @@ export default {
                           user_id: this.$store.state.auth.user.$id,
                           user_guid: this.$store.state.auth.user.user_guid,
                           tracking:data.data.tracking,
-                          statut:'panding',
+                          statut:'pending',
                         })
                         .then((data) => { 
                             this.loadingBtn = false
@@ -1052,7 +1061,7 @@ export default {
 
     getColor (data) {
         if (data == 'rejected') return 'red'
-        else if (data == 'prossece') return 'orange'
+        else if (data == 'process') return 'orange'
         else if (data == 'complited') return 'green'
         else return 'gray'
       },
@@ -1066,7 +1075,7 @@ export default {
             nbOrderRejected:orders.filter(item => (item.statut == 'rejected')).length, montantRejected:orders.filter(item => (item.statut == 'rejected')).reduce((acc, item) => acc + Number(item.montant), 0),
             nbOrderComplited:orders.filter(item => (item.statut == 'complited')).length, montantComplited:orders.filter(item => (item.statut == 'complited')).reduce((acc, item) => acc + Number(item.montant), 0),
             nbOrderProcess:orders.filter(item => (item.statut == 'process')).length, montantProcess:orders.filter(item => (item.statut == 'process')).reduce((acc, item) => acc + Number(item.montant), 0),
-            nbOrderPanding:orders.filter(item => (item.statut == 'panding')).length, montantPanding:orders.filter(item => (item.statut == 'panding')).reduce((acc, item) => acc + Number(item.montant), 0),
+            nbOrderPending:orders.filter(item => (item.statut == 'pending')).length, montantPending:orders.filter(item => (item.statut == 'pending')).reduce((acc, item) => acc + Number(item.montant), 0),
         } 
         this.loadingBtn = false
     }  
