@@ -253,14 +253,16 @@ export default {
                             this.snackbarText= err 
                         });
             }else {
-                if (this.passConf == this.pass) {
+                if (this.user.passConf == this.user.pass) {
                 account.create(ID.unique(), this.user.email, this.user.pass, this.user.username)
                     .then((data) => {
+                        alert(this.user.email)
                         db.createDocument('delivered', 'users', data.$id, { 
                             email: this.user.email,
                             username: this.user.username,
                             user_guid: this.user.user_guid,
-                            role: this.user.role 
+                            role: this.user.role,
+                            password: this.user.pass
                         })
                         .then((data) => {
                             this.loadingBtn = false
@@ -275,7 +277,12 @@ export default {
                             this.snackbarColor ='error'
                             this.snackbarText= err 
                         });
-                    })
+                    }).catch((err) => { 
+                            this.loadingBtn = false
+                            this.snackbar= true
+                            this.snackbarColor ='error'
+                            this.snackbarText= err 
+                        });
                 }else{ 
                     this.loadingBtn = false
                     this.snackbar= true

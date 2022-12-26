@@ -288,8 +288,12 @@ export default {
                         storage.deleteFile('productsimg', this.product.img)
                     }
                     img = await storage.createFile('productsimg', 'unique()', this.product.imgInput)
-                    imgUrl = await storage.getFilePreview('productsimg', img.$id, 300, 200)
+                    imgUrl = await storage.getFilePreview('productsimg', img.$id)
+                }else{ 
+                    imgUrl = this.product.imgUrl
+                    img.$id =  this.product.img
                 }
+              
                 Object.assign(this.products[this.editedIndex], {...this.product, imgUrl:imgUrl})
                 db.updateDocument('delivered', 'products', this.product.$id,
                     { 

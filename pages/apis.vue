@@ -182,7 +182,7 @@ export default {
                         this.snackbarText= err 
                     });
             } else {
-                db.createDocument('delivered', 'apis', 'unique()', { name: this.api.name })
+                db.createDocument('delivered', 'apis', 'unique()', this.api )
                     .then((data) => {
                         this.loadingBtn = false
                         this.apis.push(data)
