@@ -130,6 +130,8 @@
         :loading="loading"
         loading-text="Loading... Please wait" 
         :search="searchOrder" 
+        sort-by="$createdAt"
+        sort-desc
         class="elevation-1 rounded-xl">
             <template v-slot:top>
                 <v-toolbar flat class="">
@@ -637,7 +639,7 @@ export default {
                 { text: 'Phone', value: 'phone' },
                 { text: 'Montant', value: 'montant' },
                 { text: 'Statut', value: 'statut' },
-                { text: 'Created at', value: '$createdAt' },
+                { text: 'Created at', value: '$createdAt'},
                 { text: 'Actions', value: 'actions', sortable: false },
             ],
     editedIndex:-1,
@@ -653,7 +655,7 @@ export default {
     orders:[],
     order:{},
     shipping:{},
-    api: [{api_token:'OiHJO2UfRFlKRNWUJbg5L3hG0CEfQmnkDoW', name:'la fomidable'}],
+    api: [{api_token:'OiHJO2UfRFlKRNWUJbg5L3hG0CEfQmnkDoW', name:'la fomidable',user_guid: 'TALH5G3I'}],
     DialogOrder:false,
     y: 0,
   }),
@@ -778,6 +780,7 @@ export default {
                         this.snackbarColor ='success'
                         this.snackbarText= 'success'
                         this.dialogDelete = false
+                        this.orders.splice(this.editedIndex, 1)
                     }).catch(err => { 
                         this.loadingBtn = false
                         this.snackbar= true
@@ -851,7 +854,15 @@ export default {
     createOrder(){ 
         this.loadingBtn = true
         const produit = this.globalProducts.map(item => item.model.map(item => item.text)+' : '+item.model[2].quantity)
+        this.order.user_guid = this.api.find(item => (item.api_token == this.order.api_token)).user_guid
+        if(this.modelAddress[0]){ 
             
+            if(this.order.stop_desk == 0 ){ 
+                this.order.montantNet = Number(this.order.montant) - Number(this.modelAddress[0].livrasion)
+            }else{ 
+                this.order.montantNet = Number(this.order.montant) - Number(this.modelAddress[0].desk)
+            }
+        }
         if (this.editedIndex > -1) {
                 Object.assign(this.orders[this.editedIndex], this.order)
                 this.$axios.post('https://app.noest-dz.com/api/public/delete/order', {        
@@ -884,6 +895,7 @@ export default {
                       commune: this.modelAddress[1].text,
                       address_model: JSON.stringify(this.modelAddress),
                       montant:Number(this.order.montant) ,
+                      montantNet:Number(this.order.montantNet) ,
                       remarque:this.order.remarque,
                       produit:JSON.stringify(produit),
                       produit_model: JSON.stringify(this.globalProducts),
@@ -923,7 +935,7 @@ export default {
                 this.$axios.post('https://app.noest-dz.com/api/public/create/order', {
 
                 api_token:this.order.api_token,
-                user_guid: this.$store.state.auth.user.user_guid,
+                user_guid: this.order.user_guid,
                 client: this.order.client,
                 phone:this.order.phone,
                 adresse:this.order.adresse,
@@ -947,6 +959,7 @@ export default {
                           commune:this.modelAddress[1].text,
                           address_model: JSON.stringify(this.modelAddress),
                           montant:Number(this.order.montant) ,
+                          montantNet:Number(this.order.montantNet) ,
                           remarque:this.order.remarque,
                           produit:JSON.stringify(produit),
                           produit_model: JSON.stringify(this.globalProducts),
@@ -955,7 +968,7 @@ export default {
                           stop_desk:Number(this.order.stop_desk) ,
                           api_token:this.order.api_token,
                           user_id: this.$store.state.auth.user.$id,
-                          user_guid: this.$store.state.auth.user.user_guid,
+                          user_guid: this.order.user_guid,
                           tracking:data.data.tracking,
                           statut:'pending',
                         })
@@ -1072,10 +1085,10 @@ export default {
         && this.filterage.user == item.user_id && this.filterage.api_token == item.api_token ))
 
         this.statisticsTotal = {
-            nbOrderRejected:orders.filter(item => (item.statut == 'rejected')).length, montantRejected:orders.filter(item => (item.statut == 'rejected')).reduce((acc, item) => acc + Number(item.montant), 0),
-            nbOrderComplited:orders.filter(item => (item.statut == 'complited')).length, montantComplited:orders.filter(item => (item.statut == 'complited')).reduce((acc, item) => acc + Number(item.montant), 0),
-            nbOrderProcess:orders.filter(item => (item.statut == 'process')).length, montantProcess:orders.filter(item => (item.statut == 'process')).reduce((acc, item) => acc + Number(item.montant), 0),
-            nbOrderPending:orders.filter(item => (item.statut == 'pending')).length, montantPending:orders.filter(item => (item.statut == 'pending')).reduce((acc, item) => acc + Number(item.montant), 0),
+            nbOrderRejected:orders.filter(item => (item.statut == 'rejected')).length, montantRejected:orders.filter(item => (item.statut == 'rejected')).reduce((acc, item) => acc + Number(item.montantNet), 0),
+            nbOrderComplited:orders.filter(item => (item.statut == 'complited')).length, montantComplited:orders.filter(item => (item.statut == 'complited')).reduce((acc, item) => acc + Number(item.montantNet), 0),
+            nbOrderProcess:orders.filter(item => (item.statut == 'process')).length, montantProcess:orders.filter(item => (item.statut == 'process')).reduce((acc, item) => acc + Number(item.montantNet), 0),
+            nbOrderPending:orders.filter(item => (item.statut == 'pending')).length, montantPending:orders.filter(item => (item.statut == 'pending')).reduce((acc, item) => acc + Number(item.montantNet), 0),
         } 
         this.loadingBtn = false
     }  

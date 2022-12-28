@@ -28,6 +28,10 @@
                                             <v-text-field v-model="api.api_token" :value="api.api_token"
                                                 label="Api token"></v-text-field>
                                         </v-col>
+                                        <v-col cols="12">
+                                            <v-text-field v-model="api.user_guid" :value="api.user_guid"
+                                                label="User guid"></v-text-field>
+                                        </v-col>
                                     </v-row>
                                 </v-container>
                             </v-card-text>
@@ -170,7 +174,10 @@ export default {
             if (this.editedIndex > -1) {
                 Object.assign(this.apis[this.editedIndex], this.api)
                 db.updateDocument('delivered', 'apis', this.api.$id,
-                    { name: this.api.name }).then(() => { 
+                    { name: this.api.name,
+                      user_guid: this.api.user_guid,
+                      api_token: this.api.api_token
+                    }).then(() => { 
                         this.loadingBtn = false
                         this.snackbar= true
                         this.snackbarColor ='success'

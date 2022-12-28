@@ -60,7 +60,12 @@
                                                 </v-col>
                                             </v-row>
                                             <v-row class="align-center mb-3 ">
-                                                <v-col class="d-flex justify-end">
+                                                 <v-col cols="6">
+                                                    <v-text-field v-model="variation.priceBuy" label="Price Origine">
+                                                    </v-text-field>
+                                                </v-col>
+                                                <v-col cols="6" class="d-flex justify-end">
+                                                    
                                                     <div v-if="editedIndex != -1"> 
 
                                                         <v-chip v-if="variation.$id != -1" class="align-center mr-2" color="blue"  outlined 
@@ -266,6 +271,7 @@ export default {
                 size: element.size,
                 quantity: element.quantity,
                 price: element.price,
+                priceBuy: element.priceBuy,
                 productID: this.product.$id
             }).then((data) => {
                 this.variations[index].$id = data.$id    
@@ -333,6 +339,7 @@ export default {
                                 size: element.size,
                                 quantity: element.quantity,
                                 price: element.price,
+                                priceBuy: element.priceBuy,
                                 productID: data.$id
                             }).catch((err) => {  
                                 this.loadingBtn = false
@@ -394,6 +401,7 @@ export default {
                 size: variation.size,
                 quantity: variation.quantity,
                 price: variation.price,
+                priceBuy: variation.priceBuy,
                // id_: _id
             }).then(() => { 
                 this.snackbar= true

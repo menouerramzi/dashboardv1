@@ -49,10 +49,7 @@
                                             <v-text-field type="password" v-model="user.passConf" :value="user.passConf"
                                                 label="Conferm password"></v-text-field>
                                         </v-col>
-                                        <v-col cols="12">
-                                            <v-text-field v-model="user.user_guid" :value="user.user_guid"
-                                                label="User guid"></v-text-field>
-                                        </v-col>
+                                        
                                         <v-col cols="12"> 
 
                                             <v-radio-group
@@ -194,13 +191,13 @@ export default {
       
         deleteUser() {    
                 this.loadingBtn = true   
-                this.users.splice(this.editedIndex, 1)
                 this.closeDelete()
                 db.deleteDocument('delivered', 'users', this.UserID).then(() => { 
                     this.loadingBtn = false
                     this.snackbar= true
                     this.snackbarColor ='success'
                     this.snackbarText= 'success'
+                    this.users.splice(this.editedIndex, 1)
                 }).catch((err) => { 
                             this.loadingBtn = false
                             this.snackbar= true
@@ -239,7 +236,6 @@ export default {
                 db.updateDocument('delivered', 'users', this.user.$id,
                     { 
                         username: this.user.username,
-                        user_guid: this.user.user_guid,
                         role: this.user.role 
                     }).then(() => { 
                         this.loadingBtn = false
@@ -253,16 +249,16 @@ export default {
                             this.snackbarText= err 
                         });
             }else {
+                const user = {...this.user}
                 if (this.user.passConf == this.user.pass) {
                 account.create(ID.unique(), this.user.email, this.user.pass, this.user.username)
                     .then((data) => {
-                        alert(this.user.email)
+                        alert(user.email)
                         db.createDocument('delivered', 'users', data.$id, { 
-                            email: this.user.email,
-                            username: this.user.username,
-                            user_guid: this.user.user_guid,
-                            role: this.user.role,
-                            password: this.user.pass
+                            email: user.email,
+                            username: user.username,
+                            role: user.role,
+                            password: user.pass
                         })
                         .then((data) => {
                             this.loadingBtn = false
