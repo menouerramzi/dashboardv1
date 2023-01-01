@@ -11,9 +11,7 @@
           <v-col cols="4" class="py-3">
             <v-card height="50" width="50" class="rounded-1">
 
-              <v-card-subtitle class="red  white--text"> 
-                <v-icon small> mdi-flash</v-icon>
-              </v-card-subtitle>
+              <v-img :src="require('@/static/laFormidable.jpg')" alt="logo" contain></v-img>
             </v-card>
           </v-col>
         </v-row>

@@ -5,14 +5,14 @@
           <v-card class="auth-card mx-auto my-auto" style="max-width:400px;">
             <!-- logo -->
             <v-card-title class="d-flex align-center justify-center py-7">
-              <!-- <nuxt-link to="/" class="d-flex align-center"> -->
-                <!-- <v-img :src="require('@/static/favicon.ico')" max-height="30px" max-width="30px" alt="logo" contain
-                  class="me-3 "></v-img> -->
+              <nuxt-link to="/" class="d-flex align-center">
+                <v-img :src="require('@/static/laFormidable.jpg')" max-height="30px" max-width="30px" alt="logo" contain
+                 class="rounded-1 me-3 "></v-img>
   
                 <h2 class="">
                   <span style="color:#ffc221;"> La </span> formidable
                 </h2>
-              <!-- </nuxt-link> -->
+              </nuxt-link>
             </v-card-title>
   
             <!-- title -->
