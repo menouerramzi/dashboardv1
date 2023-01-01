@@ -253,7 +253,6 @@ export default {
                 if (this.user.passConf == this.user.pass) {
                 account.create(ID.unique(), this.user.email, this.user.pass, this.user.username)
                     .then((data) => {
-                        alert(user.email)
                         db.createDocument('delivered', 'users', data.$id, { 
                             email: user.email,
                             username: user.username,
