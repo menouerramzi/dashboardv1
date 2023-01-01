@@ -200,46 +200,65 @@
                     md="4"
                     lg="3"
                 >
-                    <v-card>
-                    <v-card-title class="subheading font-weight-bold">
-                        {{ item.client }}
-                    </v-card-title>
+                
+            <v-expansion-panels
+            multiple
+            >
+                <v-expansion-panel>
+                    <v-expansion-panel-header  >
+                        
+                        <v-span class="subheading font-weight-bold"> 
+                            <v-badge
+                                bottom
+                                :color="getColor(item.statut)"
+                                inline
+                                dot
+                            >
 
+                            {{ item.client }}
+                        </v-badge>
+                    </v-span>
+                    </v-expansion-panel-header>
                     <v-divider></v-divider>
-
-                    <v-list dense>
-                        <v-list-item
-                        v-for="(key, index) in filteredKeys"
-                        :key="index"
-                        >
-                        <v-list-item-content :class="{ 'blue--text': sortBy === key }">
-                            {{ key }}:
-                        </v-list-item-content>
-                        <v-list-item-content
-                            class="align-end"
-                            :class="{ 'blue--text': sortBy === key }"
-                        >
-                            {{ item[key.toLowerCase()] }}
-                        </v-list-item-content>
-                        </v-list-item>
-                        <v-list-item>
+                    <v-expansion-panel-content>
+                   
+                        <v-list dense>
+                            <v-list-item
+                            v-for="(key, index) in filteredKeys"
+                            :key="index"
+                            >
                             <v-list-item-content :class="{ 'blue--text': sortBy === key }">
-                                Actions:
+                                {{ key }}:
                             </v-list-item-content>
-                     
-                            <v-icon  small class="mr-2" @click="(readonly = true) , editItem(item)">
-                                mdi-eye
-                            </v-icon>
-                            <v-icon v-if="item.statut == 'pending'" small class="mr-2" @click="(readonly = false) ,editItem(item)">
-                                mdi-pencil
-                            </v-icon>
-                            <v-icon v-if="item.statut == 'pending'" small class="mr-2" @click="deleteItem(item)">
-                                mdi-delete
-                            </v-icon>
+                            <v-list-item-content
+                                class="align-end"
+                                :class="{ 'blue--text': sortBy === key }"
+                            >
+                                {{ item[key.toLowerCase()] }}
+                            </v-list-item-content>
+                            </v-list-item>
+                            <v-list-item>
+                                <v-list-item-content :class="{ 'blue--text': sortBy === key }">
+                                    Actions:
+                                </v-list-item-content>
+                        
+                                <v-icon   class="mr-5" @click="(readonly = true) , editItem(item)">
+                                    mdi-eye
+                                </v-icon>
+                                <v-icon v-if="item.statut == 'pending'"  class="mr-5" @click="(readonly = false) ,editItem(item)">
+                                    mdi-pencil
+                                </v-icon>
+                                <v-icon v-if="item.statut == 'pending'"  class="mr-5" @click="deleteItem(item)">
+                                    mdi-delete
+                                </v-icon>
 
-                        </v-list-item>
-                    </v-list>
-                    </v-card>
+                            </v-list-item>
+                        </v-list>
+
+                    </v-expansion-panel-content>
+                </v-expansion-panel>
+            </v-expansion-panels>
+
                 </v-col>
                 </v-row>
             </template>
