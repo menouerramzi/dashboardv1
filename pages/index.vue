@@ -756,7 +756,7 @@
             </template>
             <template v-slot:item.user_id="{ item }">
 
-                    {{ users?.find(user => (user.$id == item.user_id))?.username }}
+                    {{ users?.find(user => (user.$id == item.user_id))?.username}}
 
             </template>
 
@@ -824,7 +824,7 @@ export default {
     dateAfter : moment(new Date()).format('L'),
     dateBefor : moment(new Date(new Date().setDate(new Date().getDate() - 30))).format('L'),
     },
-    users:{},
+    users:[],
     statisticsTotal:{},
 
     headers: [
