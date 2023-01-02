@@ -595,7 +595,7 @@
                                                                 <v-icon color="red">mdi-close-circle</v-icon>
                                                                 </v-btn>
                                                             </v-list-item-action>
-                                                            <v-img :src="menu.img"></v-img>
+                                                            <v-img :src="menu.img" contain></v-img>
                                                         </v-list-item>
                                                     </v-list>
                                                     <v-list v-if="menu.text">
