@@ -812,6 +812,23 @@
                     </v-btn>
                 </div>
             </template>
+            <template v-slot:body.append>
+                <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>
+                    <v-text-field
+                    v-model="filterage.dateAfter" :value="filterage.dateAfter"
+                    type="date"
+                    label="After date"
+                    ></v-text-field>
+                </td>
+                <td colspan="4"></td>
+                </tr>
+            </template>
         </v-data-table>
         <v-snackbar v-model="snackbar" :color="snackbarColor">
         {{ snackbarText }}
@@ -852,15 +869,20 @@ export default {
     users:[],
     statisticsTotal:{},
 
-    headers: [
-                { text: 'User', value: 'user_id' },
-                { text: 'Full Name', value: 'client' },
-                { text: 'Phone', value: 'phone' },
-                { text: 'Montant', value: 'montant' },
-                { text: 'Statut', value: 'statut' },
-                { text: 'Created at', value: '$createdAt'},
-                { text: 'Actions', value: 'actions', sortable: false },
-            ],
+    // headers: [
+    //             { text: 'User', value: 'user_id' },
+    //             { text: 'Full Name', value: 'client' },
+    //             { text: 'Phone', value: 'phone' },
+    //             { text: 'Montant', value: 'montant' },
+    //             { text: 'Statut', value: 'statut' },
+    //             { text: 'Created at', value: '$createdAt',
+    //             filter: value => {
+    //                 if (!this.filterage.dateAfter) return true
+    //                  return value < this.filterage.dateAfter
+    //                 },
+    //             },
+    //             { text: 'Actions', value: 'actions', sortable: false },
+    //         ],
     editedIndex:-1,
 
     products:[],
@@ -895,6 +917,23 @@ export default {
   }),
 
   computed: {
+
+    headers () {
+        return [ 
+                { text: 'User', value: 'user_id' },
+                { text: 'Full Name', value: 'client' },
+                { text: 'Phone', value: 'phone' },
+                { text: 'Montant', value: 'montant' },
+                { text: 'Statut', value: 'statut' },
+                { text: 'Created at', value: '$createdAt',
+                filter: value => {
+                    if (!this.filterage.dateAfter) return true
+                     return value > this.filterage.dateAfter
+                    },
+                },
+                { text: 'Actions', value: 'actions', sortable: false },
+        ] 
+    },
         formTitle() {
             return this.editedIndex === -1 ? 'Create New Order' : this.readonly?'Order':'Edit Order'
         },
