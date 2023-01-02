@@ -30,7 +30,7 @@
                                                 placeholder="Product picture" truncate-length="5"></v-file-input>
                                         </v-col>
                                         <v-col  v-if="((editedIndex != -1) && product.imgUrl)"  cols="12"> 
-                                            <v-img class="mx-auto" width="300" height="200" :src="product.imgUrl+'&mode=admin'"></v-img>   
+                                            <v-img class="mx-auto" width="300" height="200" :src="product.imgUrl+'&mode=admin'" contain></v-img>   
                                         </v-col>
                                         <v-card-actions class="align-center">
                                             <v-btn color="primary" text @click="addMore()">
@@ -321,7 +321,7 @@ export default {
                 if(this.product.imgInput){ 
 
                     img = await storage.createFile('productsimg', 'unique()', this.product.imgInput)
-                    imgUrl = await storage.getFilePreview('productsimg', img.$id, 300, 200)
+                    imgUrl = await storage.getFilePreview('productsimg', img.$id)
                     // alert(JSON.stringify(imgUrl))
                 }
                 db.createDocument('delivered', 'products', 'unique()', {
