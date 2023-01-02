@@ -6,7 +6,7 @@
             <!-- logo -->
             <v-card-title class="d-flex align-center justify-center py-7">
               <nuxt-link to="/" class="d-flex align-center">
-                <v-img :src="require('@/static/laFormidable.jpg')" max-height="30px" max-width="30px" alt="logo" contain
+                <v-img :src="require('@/static/favicon.ico')" max-height="30px" max-width="30px" alt="logo" contain
                  class="rounded-1 me-3 "></v-img>
   
                 <h2 class="">
