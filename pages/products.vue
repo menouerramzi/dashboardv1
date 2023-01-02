@@ -183,7 +183,7 @@ export default {
                     value: 'imgUrl',
                 },
                 { text: 'Product Name', value: 'name' },
-                { text: 'Complited ', value: 'complited' },
+                { text: 'Completed ', value: 'completed' },
                 { text: 'Rejected', value: 'rejected' },
                 { text: 'Actions', value: 'actions', sortable: false },
             ],
@@ -328,7 +328,7 @@ export default {
                      name: this.product.name,
                      imgUrl: imgUrl,
                      img: img.$id,
-                     complited:0,
+                     completed:0,
                      rejected:0
 
                      })

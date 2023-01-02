@@ -82,11 +82,11 @@
                     <v-icon small class="mr-2" color="green"> 
                         mdi-check
                     </v-icon>
-                        Complited
+                        Completed
                     </v-card-title>
                     <v-card-subtitle>
                         <span class="text-h5"> 
-                            {{statisticsTotal.montantComplited}} DA
+                            {{statisticsTotal.montantCompleted}} DA
                         </span>
                     </v-card-subtitle>
                     <v-card-text class="d-flex justify-space-between"> 
@@ -94,7 +94,7 @@
                             Montant
                         </span>
                         <span class="text-h8"> 
-                            Orders: {{statisticsTotal.nbOrderComplited}}
+                            Orders: {{statisticsTotal.nbOrderCompleted}}
                         </span>
                     </v-card-text>
                 </v-card>
@@ -740,8 +740,8 @@
                                     <v-btn v-if="(order.statut == 'pending')" :loading="loadingBtn" :disabled="loadingBtn" color="orange" text @click="validationOrder()">
                                         Valide
                                     </v-btn>
-                                    <v-btn v-if="(order.statut == 'process')" :loading="loadingBtn" :disabled="loadingBtn" color="green" text @click="changeStateOrder('complited')">
-                                        complited
+                                    <v-btn v-if="(order.statut == 'process')" :loading="loadingBtn" :disabled="loadingBtn" color="green" text @click="changeStateOrder('completed')">
+                                        completed
                                     </v-btn>
                                     <v-btn v-if="(order.statut == 'process')" :loading="loadingBtn" :disabled="loadingBtn" color="red" text @click="changeStateOrder('rejected')">
                                         Rejected
@@ -983,7 +983,7 @@ export default {
                 this.loading = false
         })
         db.listDocuments('delivered', 'products').then((data) => {
-                this.products = data.documents.map(item => ({id:item.$id, text:item.name, img:item.imgUrl, rejected:item.rejected, complited:item.complited}))
+                this.products = data.documents.map(item => ({id:item.$id, text:item.name, img:item.imgUrl, rejected:item.rejected, completed:item.completed}))
                 this.initial()
             })
         db.listDocuments('delivered', 'variations').then((data) => {
@@ -1110,20 +1110,20 @@ export default {
 
                     const data =  this.globalProducts.map(item => ({
                         rejected:item.model[0].rejected,
-                        complited:item.model[0].complited,
+                        completed:item.model[0].completed,
                         product_id:item.model[0].id,
                         variation_id:item.model[2].id,
                         stock:item.model[2].stock,
                         quantity:item.model[2].quantity
                     }))
 
-                if(state == 'complited'){ 
+                if(state == 'completed'){ 
 
                     data.forEach(item => { 
                         
                         db.updateDocument('delivered', 'products', item.product_id,
                         {
-                            complited: Number(item.complited) + Number(item.quantity)
+                            completed: Number(item.completed) + Number(item.quantity)
                         })
                         db.updateDocument('delivered', 'variations', item.variation_id,
                         {
@@ -1336,7 +1336,7 @@ export default {
 
           this.globalProducts[global].items = [{ header: 'Select an product or create one' }]
                     this.products.forEach(item => { 
-                        this.globalProducts[global].items.push({id : item.id, text : item.text, img : item.img, rejected:item.rejected, complited:item.complited})
+                        this.globalProducts[global].items.push({id : item.id, text : item.text, img : item.img, rejected:item.rejected, completed:item.completed})
                     })
         }else if(this.globalProducts[global].model.length == 1){ 
                         this.globalProducts[global].items = [{ header: 'Select an color or create one' }]
@@ -1374,7 +1374,7 @@ export default {
     getColor (data) {
         if (data == 'rejected') return 'red'
         else if (data == 'process') return 'orange'
-        else if (data == 'complited') return 'green'
+        else if (data == 'completed') return 'green'
         else return 'gray'
       },
 
@@ -1385,7 +1385,7 @@ export default {
 
         this.statisticsTotal = {
             nbOrderRejected:orders.filter(item => (item.statut == 'rejected')).length, montantRejected:orders.filter(item => (item.statut == 'rejected')).reduce((acc, item) => acc + Number(item.montantNet), 0),
-            nbOrderComplited:orders.filter(item => (item.statut == 'complited')).length, montantComplited:orders.filter(item => (item.statut == 'complited')).reduce((acc, item) => acc + Number(item.montantNet), 0),
+            nbOrderCompleted:orders.filter(item => (item.statut == 'completed')).length, montantCompleted:orders.filter(item => (item.statut == 'completed')).reduce((acc, item) => acc + Number(item.montantNet), 0),
             nbOrderProcess:orders.filter(item => (item.statut == 'process')).length, montantProcess:orders.filter(item => (item.statut == 'process')).reduce((acc, item) => acc + Number(item.montantNet), 0),
             nbOrderPending:orders.filter(item => (item.statut == 'pending')).length, montantPending:orders.filter(item => (item.statut == 'pending')).reduce((acc, item) => acc + Number(item.montantNet), 0),
         } 
