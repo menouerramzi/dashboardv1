@@ -127,7 +127,12 @@
 
 
         <!-- start mobile theme -->
-
+        <div class="d-flex d-sm-none d-block"> 
+            <v-spacer></v-spacer>
+            <v-btn color="primary" dark class="mx-4 mb-2 " @click="newOrder()">
+                    + Create Order
+            </v-btn>
+        </div>
         <v-data-iterator
             :items="orders"
             :items-per-page.sync="itemsPerPage"
@@ -138,6 +143,7 @@
             hide-default-footer
             class="mx-4 my-4 d-sm-none d-block"
             >
+            
             <template v-slot:header>
                 <v-toolbar
                 dark
