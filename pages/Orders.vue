@@ -1041,6 +1041,17 @@ export default {
                         this.snackbar= true
                         this.snackbarColor ='error'
                         this.snackbarText= err
+
+                            db.deleteDocument('delivered', 'orders', this.order.$id).then(()=>{
+                            this.loadingBtn = false
+                            this.dialogDelete = false
+                            this.orders.splice(this.editedIndex, 1)
+                        }).catch(err => { 
+                            this.loadingBtn = false
+                            this.snackbar= true
+                            this.snackbarColor ='error'
+                            this.snackbarText= err
+                        })
                     })
     },
     // https://app.noest-dz.com/download/etiq/
