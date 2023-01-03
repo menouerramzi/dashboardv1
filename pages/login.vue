@@ -102,6 +102,7 @@ export default {
                                 email: data.email,
                                 username: data.username,
                                 role: data.role,
+                                $id: data.$id
                             }
 
                             this.$store.commit('auth/SET_UserInfo', userData)
