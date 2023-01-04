@@ -364,7 +364,7 @@ export default {
             this.close()
         },
         initialize() {
-            db.listDocuments('delivered', 'products').then((data) => {
+            db.listDocuments('delivered', 'products', [Query.limit(100) ] ).then((data) => {
                 this.products = data.documents
                 this.loading = false
             })
