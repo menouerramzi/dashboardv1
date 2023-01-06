@@ -38,7 +38,7 @@ export const actions = {
       
                 // if(this.$router.currentRoute.path == '/login'){ 
                 //   this.$router.push({
-                //     path: '/orders',
+                //     path: '/',
                 //   })
                 // }
               

@@ -5,8 +5,8 @@ export default function ({ store, route, redirect }) {
     if (!store.state.auth.user) {
     account.get().then(userData => { 
       store.dispatch('auth/onAuthStateChangedAction', {...userData}).then(() => { 
-          if (store.state.auth.user && route.path !== '/orders') {
-            return redirect('/orders')
+          if (store.state.auth.user && route.path !== '/') {
+            return redirect('/')
           }
         })
       }).catch(err => {
@@ -14,8 +14,8 @@ export default function ({ store, route, redirect }) {
         return redirect('/login')
       })  
     } else{
-      if (store.state.auth.user && route.path !== '/orders') {
-        return redirect('/orders')
+      if (store.state.auth.user && route.path !== '/') {
+        return redirect('/')
       } 
     }   
       

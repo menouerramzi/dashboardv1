@@ -82,7 +82,7 @@ export default {
         {
           icon: 'mdi-cube',
           title: 'Manage Orders',
-          to: '/orders',
+          to: '/',
           role: 111
         },
         {
