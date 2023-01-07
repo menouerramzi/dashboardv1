@@ -966,14 +966,14 @@ export default {
 
     getDataInitial(){ 
 
-        db.listDocuments('delivered', 'users', [Query.limit(100)]).then((data) => {
+        db.listDocuments('delivered', 'users', [Query.limit(1000)]).then((data) => {
                 this.users = data.documents
                 if(this.users){ 
                     this.filterage.user = this.users[0].$id
                 }
         })
 
-        db.listDocuments('delivered', 'orders', [Query.limit(100), Query.orderDesc('')]).then((data) => {
+        db.listDocuments('delivered', 'orders', [Query.limit(1000), Query.orderDesc('')]).then((data) => {
                 if(this.$store.state.auth.user.role == 'user'){ 
                     this.orders = data.documents.filter(item => (item.user_id == this.$store.state.auth.user.$id ))
                 }else{ 
@@ -982,11 +982,11 @@ export default {
                 }
                 this.loading = false
         })
-        db.listDocuments('delivered', 'products', [Query.limit(100)]).then((data) => {
+        db.listDocuments('delivered', 'products', [Query.limit(1000)]).then((data) => {
                 this.products = data.documents.map(item => ({id:item.$id, text:item.name, img:item.imgUrl, rejected:item.rejected, completed:item.completed}))
                 this.initial()
             })
-        db.listDocuments('delivered', 'variations', [Query.limit(100)]).then((data) => {
+        db.listDocuments('delivered', 'variations', [Query.limit(1000)]).then((data) => {
             this.variations = data.documents.map(item => ({
                     id:item.$id,
                     product_id:item.productID, 
@@ -996,7 +996,7 @@ export default {
                     price:item.price
             }))
         })    
-        db.listDocuments('delivered', 'apis', [Query.limit(100)]).then((data) => {
+        db.listDocuments('delivered', 'apis', [Query.limit(1000)]).then((data) => {
                 this.api = data.documents
                 if(this.api){ 
                     this.filterage.api_token = this.api[0].api_token
