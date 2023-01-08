@@ -965,6 +965,13 @@ export default {
       },
 
     async getDataInitial(){ 
+
+        db.listDocuments('delivered', 'apis').then((data) => {
+                this.api = data.documents
+                if(this.api){ 
+                    this.filterage.api_token = this.api[0].api_token
+                }
+        }) 
         let nbUsers = 0
         let loopUsers = true
         
@@ -1033,13 +1040,6 @@ export default {
                 loopVariations = false
             })  
         }
-
-        db.listDocuments('delivered', 'apis', [Query.limit(100)]).then((data) => {
-                    this.api = data.documents
-                    if(this.api){ 
-                        this.filterage.api_token = this.api[0].api_token
-                    }
-        })
     },
     newOrder(){ 
         if(this.editedIndex != -1){ 
