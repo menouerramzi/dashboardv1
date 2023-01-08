@@ -363,11 +363,22 @@ export default {
             }
             this.close()
         },
-        initialize() {
-            db.listDocuments('delivered', 'products', [Query.limit(1000) ] ).then((data) => {
-                this.products = data.documents
-                this.loading = false
-            })
+        async initialize() {
+            let n = 0
+            let loop = true
+            while(loop){  
+                await db.listDocuments('delivered', 'products', [Query.limit(25) , Query.offset(n)] ).then((data) => {
+                       
+                            this.products.push(...data.documents)
+                            n = n + 1
+                            loop = data.total/25 > n
+                            this.loading = false
+                            
+                        }).catch(() =>  { 
+                            this.loading = false
+                            loop = false
+                        })
+            }
         },
         editItem(item) {
             this.product = item

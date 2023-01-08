@@ -964,43 +964,81 @@ export default {
         this.itemsPerPage = number
       },
 
-    getDataInitial(){ 
-
-        db.listDocuments('delivered', 'users', [Query.limit(1000)]).then((data) => {
-                this.users = data.documents
-                if(this.users){ 
-                    this.filterage.user = this.users[0].$id
-                }
-        })
-
-        db.listDocuments('delivered', 'orders', [Query.limit(1000), Query.orderDesc('')]).then((data) => {
-                if(this.$store.state.auth.user.role == 'user'){ 
-                    this.orders = data.documents.filter(item => (item.user_id == this.$store.state.auth.user.$id ))
-                }else{ 
-
-                    this.orders = data.documents
-                }
-                this.loading = false
-        })
-        db.listDocuments('delivered', 'products', [Query.limit(1000)]).then((data) => {
-                this.products = data.documents.map(item => ({id:item.$id, text:item.name, img:item.imgUrl, rejected:item.rejected, completed:item.completed}))
-                this.initial()
+    async getDataInitial(){ 
+        let nbUsers = 0
+        let loopUsers = true
+        
+        while(loopUsers){  
+            await db.listDocuments('delivered', 'users', [Query.limit(25) , Query.offset(nbUsers)]).then((data) => {
+                    this.users.push(...data.documents)
+                    nbUsers = nbUsers + 1
+                    loopUsers = data.total/25 > nbUsers
+                    if(this.users){ 
+                        this.filterage.user = this.users[0].$id
+                    }
+            }).catch(() => { 
+                loopUsers = false
             })
-        db.listDocuments('delivered', 'variations', [Query.limit(1000)]).then((data) => {
-            this.variations = data.documents.map(item => ({
-                    id:item.$id,
-                    product_id:item.productID, 
-                    color:item.colour, 
-                    size:item.size,
-                    stock:item.quantity,
-                    price:item.price
-            }))
-        })    
-        db.listDocuments('delivered', 'apis', [Query.limit(1000)]).then((data) => {
-                this.api = data.documents
-                if(this.api){ 
-                    this.filterage.api_token = this.api[0].api_token
-                }
+        }
+
+        let nbOrders = 0
+        let loopOrders = true
+        while(loopOrders){  
+            await db.listDocuments('delivered', 'orders', [Query.limit(25) , Query.offset(nbOrders), Query.orderDesc('')]).then((data) => {
+                    nbOrders = nbOrders + 1
+                    loopOrders = data.total/25 > nbOrders
+                    if(this.$store.state.auth.user.role == 'user'){ 
+                        this.orders.push(...data.documents.filter(item => (item.user_id == this.$store.state.auth.user.$id )))
+                    }else{ 
+                        this.orders.push(...data.documents)
+                    }
+                    this.loading = false
+            }).catch(() => { 
+                    this.loading = false
+                    loopOrders = false
+            })
+        }
+        let nbProducts = 0
+        let loopProducts = true
+        while(loopProducts){ 
+
+            await db.listDocuments('delivered', 'products', [Query.limit(25) , Query.offset(nbProducts)]).then((data) => {
+                nbProducts = nbProducts + 1
+                loopProducts = data.total/25 > nbProducts
+                this.products.push(...data.documents.map(item => ({id:item.$id, text:item.name, img:item.imgUrl, rejected:item.rejected, completed:item.completed})))
+            }).catch(() => { 
+                loopProducts = false
+            })
+            if(!loopProducts){ 
+                this.initial()
+            }
+        }
+        let nbVariations = 0
+        let loopVariations = true
+        while(loopVariations){ 
+
+           await db.listDocuments('delivered', 'variations', [Query.limit(25) , Query.offset(nbVariations)]).then((data) => {
+                nbVariations = nbVariations + 1
+                loopProducts = data.total/25 > nbVariations
+
+                this.variations.push(...data.documents.map(item => ({
+                            id:item.$id,
+                            product_id:item.productID, 
+                            color:item.colour, 
+                            size:item.size,
+                            stock:item.quantity,
+                            price:item.price
+                    })))
+            }).catch(() => { 
+                loopVariations = false
+            })  
+        }
+
+        db.listDocuments('delivered', 'apis', [Query.limit(100)]).then((data) => {
+                    this.api = data.documents
+                    if(this.api){ 
+                        this.filterage.api_token = this.api[0].api_token
+                    }
         })
     },
     newOrder(){ 
