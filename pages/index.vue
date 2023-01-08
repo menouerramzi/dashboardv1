@@ -976,7 +976,7 @@ export default {
         let loopUsers = true
         
         while(loopUsers){  
-            await db.listDocuments('delivered', 'users', [Query.limit(25) , Query.offset(nbUsers)]).then((data) => {
+            await db.listDocuments('delivered', 'users', [Query.limit(25) , Query.offset(nbUsers*25)]).then((data) => {
                     this.users.push(...data.documents)
                     nbUsers = nbUsers + 1
                     loopUsers = data.total/25 > nbUsers
@@ -991,7 +991,7 @@ export default {
         let nbOrders = 0
         let loopOrders = true
         while(loopOrders){  
-            await db.listDocuments('delivered', 'orders', [Query.limit(25) , Query.offset(nbOrders), Query.orderDesc('')]).then((data) => {
+            await db.listDocuments('delivered', 'orders', [Query.limit(25) , Query.offset(nbOrders*25), Query.orderDesc('')]).then((data) => {
                     nbOrders = nbOrders + 1
                     loopOrders = data.total/25 > nbOrders
                     if(this.$store.state.auth.user.role == 'user'){ 
@@ -1009,7 +1009,7 @@ export default {
         let loopProducts = true
         while(loopProducts){ 
 
-            await db.listDocuments('delivered', 'products', [Query.limit(25) , Query.offset(nbProducts)]).then((data) => {
+            await db.listDocuments('delivered', 'products', [Query.limit(25) , Query.offset(nbProducts*25)]).then((data) => {
                 nbProducts = nbProducts + 1
                 loopProducts = data.total/25 > nbProducts
                 this.products.push(...data.documents.map(item => ({id:item.$id, text:item.name, img:item.imgUrl, rejected:item.rejected, completed:item.completed})))
@@ -1024,7 +1024,7 @@ export default {
         let loopVariations = true
         while(loopVariations){ 
 
-           await db.listDocuments('delivered', 'variations', [Query.limit(25) , Query.offset(nbVariations)]).then((data) => {
+           await db.listDocuments('delivered', 'variations', [Query.limit(25) , Query.offset(nbVariations*25)]).then((data) => {
                 nbVariations = nbVariations + 1
                 loopProducts = data.total/25 > nbVariations
 

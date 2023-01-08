@@ -367,7 +367,7 @@ export default {
             let n = 0
             let loop = true
             while(loop){  
-                await db.listDocuments('delivered', 'products', [Query.limit(25) , Query.offset(n)] ).then((data) => {
+                await db.listDocuments('delivered', 'products', [Query.limit(25) , Query.offset(n*25)] ).then((data) => {
                        
                             this.products.push(...data.documents)
                             n = n + 1
