@@ -683,9 +683,9 @@
                                                 <v-tab-item  v-for="(item, index) in shipping.activity" :key="index">
                                                     <v-card flat>
                                                     <v-card-text>
-                                                        <span class="text-h4 mb-4">{{ item.event }}</span>
+                                                        <span class="text-sm-h4 mb-sm-4">{{ item.event }}</span>
                                                         <div class="d-flex my-4"> 
-                                                            <sapn class="text-h5 mx-3"> 
+                                                            <sapn class="text-sm-h5 mx-3"> 
                                                                 {{item.by}} : 
                                                                 <v-chip small> 
                                                                     {{item.causer}}
@@ -821,7 +821,7 @@
                 <td></td>
                 <td>
                     <v-text-field
-                    v-model="filterage.dateAfter" :value="filterage.dateAfter"
+                    v-model="filterage.dateBefor" :value="filterage.dateBefor"
                     type="date"
                     label="After date"
                     ></v-text-field>
@@ -927,8 +927,8 @@ export default {
                 { text: 'Statut', value: 'statut' },
                 { text: 'Created at', value: '$createdAt',
                 filter: value => {
-                    if (!this.filterage.dateAfter) return true
-                     return value > this.filterage.dateAfter
+                    if (!this.filterage.dateBefor) return true
+                     return value > this.filterage.dateBefor
                     },
                 },
                 { text: 'Actions', value: 'actions', sortable: false },
@@ -951,7 +951,7 @@ export default {
   },
   mounted(){ 
       this.getDataInitial()
-      this.statistics()
+      //    this.statistics()
   },
   methods: {
     nextPage () {
@@ -990,7 +990,7 @@ export default {
 
         let nbOrders = 0
         let loopOrders = true
-        while(loopOrders){  
+        while(loopOrders && nbOrders < 100){  
             await db.listDocuments('delivered', 'orders', [Query.limit(25) , Query.offset(nbOrders*25), Query.orderDesc('')]).then((data) => {
                     nbOrders = nbOrders + 1
                     loopOrders = data.total/25 > nbOrders
@@ -1157,13 +1157,26 @@ export default {
 
                 if(state == 'completed'){ 
 
-                    data.forEach(item => { 
+                    data.forEach(async item => { 
                         
-                        db.updateDocument('delivered', 'products', item.product_id,
+                       await db.updateDocument('delivered', 'products', item.product_id,
                         {
                             completed: Number(item.completed) + Number(item.quantity)
+                        }).then(async () => { 
+                           await db.createDocument('delivered', 'completed', 'unique()', {
+                                product_id: item.product_id,
+                                quantity:   Number(item.quantity),
+                                api_token:this.order.api_token,
+                            }).then(() => { 
+
+                            }).catch((err) => { 
+                                this.loadingBtn = false     
+                                this.snackbar= true
+                                this.snackbarColor ='error'
+                                this.snackbarText= err
+                            })
                         })
-                        db.updateDocument('delivered', 'variations', item.variation_id,
+                       await db.updateDocument('delivered', 'variations', item.variation_id,
                         {
                             stock: Number(item.stock) - Number(item.quantity)
                         })    
@@ -1416,8 +1429,37 @@ export default {
         else return 'gray'
       },
 
-    statistics (){ 
+    async statistics (){ 
         this.loadingBtn = true
+        // this.loading = true
+        // this.orders = []
+        // let nbOrders = 0
+        // let loopOrders = true
+        // while(loopOrders){ 
+        //     await db.listDocuments('delivered', 'orders', [
+        //         Query.limit(25),
+        //         Query.offset(nbOrders*25),
+        //         Query.lessThanEqual('$createdAt',this.filterage.dateAfte),
+        //         Query.greaterThanEqual('$createdAt',this.filterage.dateBefor),
+        //         Query.equal('user_id',[this.filterage.user]),
+        //         Query.equal('api_token',[this.filterage.api_token]),
+        //         Query.orderDesc('')
+        //     ]
+        //        ).then((data) => {
+        //             nbOrders = nbOrders + 1
+        //             loopOrders = data.total/25 > nbOrders
+                  
+        //             this.orders.push(...data.documents)
+        //             alert('yes')
+                   
+        //             this.loading = false
+        //     }).catch((err) => { 
+        //             this.loading = false
+        //             loopOrders = false
+        //             alert(err)
+        //     })
+        // }
+
         const orders = this.orders.filter(item => (((item.$createdAt == this.filterage.dateAfter || item.$createdAt == this.filterage.dateBefor) || (this.filterage.dateAfter > item.$createdAt && this.filterage.dateBefor < item.$createdAt))
         && this.filterage.user == item.user_id && this.filterage.api_token == item.api_token ))
 

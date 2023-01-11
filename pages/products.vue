@@ -1,5 +1,27 @@
 <template>
     <div>
+        <v-row class="my-4">
+            <v-col cols="6" sm="3"> 
+                <v-text-field  type="date" v-model="filterage.dateBefor" :value="filterage.dateBefor"
+                    label="Star Date"></v-text-field> 
+            </v-col> 
+            <v-col cols="6" sm="3"> 
+                <v-text-field  type="date"  v-model="filterage.dateAfter" :value="filterage.dateAfter"
+                    label="End Date"></v-text-field> 
+            </v-col>
+            <v-col cols="6" sm="3"> 
+                <v-select v-model="filterage.api_token" :items="api"
+                    item-text="name" item-value="api_token" label="Select an option">
+                </v-select>
+            </v-col>
+            <v-col cols="6" sm="3"> 
+                <v-btn color="primary" :loading="loadingBtn" :disabled="loadingBtn" dark @click="initialize(1)">
+                      Statistics
+                </v-btn>
+            </v-col>
+          
+          
+        </v-row>
         <v-data-table :headers="headers" :items="products" :loading="loading" loading-text="Loading... Please wait"  :search="search" class="elevation-1 rounded-xl">
             <template v-slot:top>
                 <v-toolbar flat class="">
@@ -159,6 +181,8 @@
     </div>
 </template>
 <script>
+
+import moment from 'moment'
 import { db, Query, ID ,storage } from "../appwrite.js"
 export default {
     middleware: 'validator',
@@ -169,8 +193,14 @@ export default {
             snackbarColor:'success',
             snackbarText:'',
             products: [],
+            orders: [],
             variations: [],
             product: {},
+            filterage:{ 
+                dateAfter : moment(new Date()).format('L'),
+                dateBefor : moment(new Date(new Date().setDate(new Date().getDate() - 30))).format('L'),
+            },
+            api: [{api_token:'OiHJO2UfRFlKRNWUJbg5L3hG0CEfQmnkDoW', name:'la fomidable',user_guid: 'TALH5G3I'}],
             dialog: false,
             loading: true,
             dialogDelete: false,
@@ -214,7 +244,7 @@ export default {
        
     },
     created() {
-        this.initialize()
+        this.initialize(0)
     },
     methods: {
         addMore() {
@@ -363,22 +393,69 @@ export default {
             }
             this.close()
         },
-        async initialize() {
-            let n = 0
-            let loop = true
-            while(loop){  
-                await db.listDocuments('delivered', 'products', [Query.limit(25) , Query.offset(n*25)] ).then((data) => {
-                       
-                            this.products.push(...data.documents)
-                            n = n + 1
-                            loop = data.total/25 > n
-                            this.loading = false
-                            
-                        }).catch(() =>  { 
-                            this.loading = false
-                            loop = false
-                        })
+        async initialize(statistics) {
+
+            this.loading = true
+            this.products = [] 
+            this.orders = []
+            db.listDocuments('delivered', 'apis').then((data) => {
+                this.api = data.documents
+                if(this.api){ 
+                    this.filterage.api_token = this.api[0].api_token
+                }
+            }) 
+            if(statistics == 1){ 
+
+                let nbOrders = 0
+                let loopOrders = true
+                while(loopOrders && nbOrders < 100){  
+                    await db.listDocuments('delivered', 'completed', [Query.limit(25) , Query.offset(nbOrders*25), Query.orderDesc('')]).then((data) => {
+                            nbOrders = nbOrders + 1
+                            loopOrders = data.total/25 > nbOrders
+                                this.orders.push(...data.documents)
+                        
+                    }).catch(() => { 
+                        
+                            loopOrders = false
+                    })
+                }
+                const orders = this.orders.filter(item => (((item.$createdAt == this.filterage.dateAfter || item.$createdAt == this.filterage.dateBefor) || (this.filterage.dateAfter > item.$createdAt && this.filterage.dateBefor < item.$createdAt))
+                &&  this.filterage.api_token == item.api_token ))
+
+            
+                let n = 0
+                let loop = true
+                while(loop){  
+                    await db.listDocuments('delivered', 'products', [Query.limit(25) , Query.offset(n*25)] ).then((data) => {
+                        
+                                this.products.push(...data.documents.map(item => ({...item, completed: orders.filter(pro => (item.$id == pro.product_id)).reduce((acc, qnt) => acc + Number(qnt.quantity), 0)})))
+                                n = n + 1
+                                loop = data.total/25 > n
+                                this.loading = false
+                                
+                            }).catch(() =>  { 
+                                this.loading = false
+                                loop = false
+                            })
+                }
+            }else{ 
+                let n = 0
+                let loop = true
+                while(loop){  
+                    await db.listDocuments('delivered', 'products', [Query.limit(25) , Query.offset(n*25)] ).then((data) => {
+                        
+                                this.products.push(...data.documents)
+                                n = n + 1
+                                loop = data.total/25 > n
+                                this.loading = false
+                                
+                            }).catch(() =>  { 
+                                this.loading = false
+                                loop = false
+                            })
+                }
             }
+           
         },
         editItem(item) {
             this.product = item
