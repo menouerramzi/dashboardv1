@@ -1329,6 +1329,7 @@ export default {
                             this.snackbarText= 'success'
                             this.DialogOrder = false
                             this.orders.push({...data})
+                            this.editedIndex = 0
 
                         }).catch(err => {
                             this.loadingBtn = false 
