@@ -1072,9 +1072,9 @@ export default {
             tracking: this.order.tracking
         }).then(async data => { 
             this.shipping = data.data
-            if(data.data.activity && data.data.activity.length > 2 && data.data.activity.event.includes(key => key == 'Montant transmis au partenaire')){ 
+            if(data.data.activity && data.data.activity.length > 2 && data.data.activity.map(act => act.event).includes('Montant transmis au partenaire')){ 
                 await this.changeStateOrder('completed')
-            }else if(data.data.activity && data.data.activity.length > 2 && data.data.activity.event.includes(key => key == 'Suspendu') && data.data.activity.event.includes(key => key == 'Retour transmis au partenaire')){     
+            }else if(data.data.activity && data.data.activity.length > 2 && data.data.activity.map(act => act.event).includes(key => key == 'Suspendu') && data.data.activity.map(act => act.event).includes(key => key == 'Retour transmis au partenaire')){     
                 await this.changeStateOrder('rejected')
             }
         })
