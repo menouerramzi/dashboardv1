@@ -1059,7 +1059,7 @@ export default {
         this.readonly = false
         this.DialogOrder = true
     },
-    editItem(item, DialogOrder){ 
+    async editItem(item, DialogOrder){ 
         this.order = item
         this.editedIndex = this.orders.indexOf(item)
         this.globalProducts = JSON.parse(this.order.produit_model)
@@ -1157,7 +1157,7 @@ export default {
                         this.order.statut = state 
 
 
-                    const data =  this.globalProducts.map(item => ({
+                    const data = JSON.parse(this.order.produit_model).map(item => ({
                         rejected:item.model[0].rejected,
                         completed:item.model[0].completed,
                         product_id:item.model[0].id,
