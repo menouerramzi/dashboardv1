@@ -398,12 +398,7 @@ export default {
             this.loading = true
             this.products = [] 
             this.orders = []
-            db.listDocuments('delivered', 'apis').then((data) => {
-                this.api = data.documents
-                if(this.api){ 
-                    this.filterage.api_token = this.api[0].api_token
-                }
-            }) 
+            
             if(statistics == 1){ 
 
                 let nbOrders = 0
@@ -439,6 +434,12 @@ export default {
                             })
                 }
             }else{ 
+                db.listDocuments('delivered', 'apis').then((data) => {
+                    this.api = data.documents
+                    if(this.api){ 
+                        this.filterage.api_token = this.api[0].api_token
+                    }
+                }) 
                 let n = 0
                 let loop = true
                 while(loop){  

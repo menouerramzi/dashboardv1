@@ -248,10 +248,10 @@
                                     Actions:
                                 </v-list-item-content>
                         
-                                <v-icon   class="mr-5" @click="(readonly = true) , editItem(item)">
+                                <v-icon   class="mr-5" @click="(readonly = true) , editItem(item, true)">
                                     mdi-eye
                                 </v-icon>
-                                <v-icon v-if="item.statut == 'pending'"  class="mr-5" @click="(readonly = false) ,editItem(item)">
+                                <v-icon v-if="item.statut == 'pending'"  class="mr-5" @click="(readonly = false) ,editItem(item, true)">
                                     mdi-pencil
                                 </v-icon>
                                 <v-icon v-if="item.statut == 'pending'"  class="mr-5" @click="deleteItem(item)">
@@ -794,10 +794,10 @@
                 </v-chip>
             </template>
             <template v-slot:item.actions="{ item }">
-                <v-icon  small class="mr-2" @click="(readonly = true) , editItem(item)">
+                <v-icon  small class="mr-2" @click="(readonly = true) , editItem(item, true)">
                     mdi-eye
                 </v-icon>
-                <v-icon v-if="item.statut == 'pending'" small class="mr-2" @click="(readonly = false) ,editItem(item)">
+                <v-icon v-if="item.statut == 'pending'" small class="mr-2" @click="(readonly = false) ,editItem(item, true)">
                     mdi-pencil
                 </v-icon>
                 <v-icon v-if="item.statut == 'pending'" small class="mr-2" @click="deleteItem(item)">
@@ -999,6 +999,11 @@ export default {
                     }else{ 
                         this.orders.push(...data.documents)
                     }
+
+                    data.documents.filter(doc => doc.statut == 'process').forEach(async item => { 
+                       await this.editItem(item, false)
+                    })
+
                     this.loading = false
             }).catch(() => { 
                     this.loading = false
@@ -1054,20 +1059,25 @@ export default {
         this.readonly = false
         this.DialogOrder = true
     },
-    editItem(item){ 
+    editItem(item, DialogOrder){ 
         this.order = item
         this.editedIndex = this.orders.indexOf(item)
         this.globalProducts = JSON.parse(this.order.produit_model)
         this.modelAddress = JSON.parse(this.order.address_model)
         this.shipping = {}
-        this.DialogOrder = true
+        this.DialogOrder = DialogOrder
         this.$axios.post('https://app.noest-dz.com/api/public/get/tracking/info', {
             api_token:this.order.api_token,
             user_guid: this.order.user_guid,
             tracking: this.order.tracking
-        }).then(data => { 
+        }).then(async data => { 
             this.shipping = data.data
-                })
+            if(data.data.activity && data.data.activity.length > 2 && data.data.activity.event.includes(key => key == 'Montant transmis au partenaire')){ 
+                await this.changeStateOrder('completed')
+            }else if(data.data.activity && data.data.activity.length > 2 && data.data.activity.event.includes(key => key == 'Suspendu') && data.data.activity.event.includes(key => key == 'Retour transmis au partenaire')){     
+                await this.changeStateOrder('rejected')
+            }
+        })
     },
 
     validationOrder(){
@@ -1131,6 +1141,7 @@ export default {
                         })
                     })
     },
+
     // https://app.noest-dz.com/download/etiq/
     changeStateOrder(state){ 
         this.loadingBtn = true
