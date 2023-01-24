@@ -1007,7 +1007,7 @@ export default {
             })
         }
 
-        this.orders.filter(doc => doc.statut == 'process').slice(0, 9).forEach(async item => { 
+        this.orders.filter(doc => doc.statut == 'process').slice(-10).forEach(async item => { 
             await this.editItem(item, false)
         })
 
