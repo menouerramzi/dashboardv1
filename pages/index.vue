@@ -1047,14 +1047,14 @@ export default {
         }
     },
     newOrder(){ 
-        if(this.editedIndex != -1){ 
+     //   if(this.editedIndex != -1){ 
 
             this.order = {}
             this.globalProducts = []
             this.initial()
             this.modelAddress = []
             this.changeAddress(-1, {})
-        }
+     //   }
         this.editedIndex = -1
         this.readonly = false
         this.DialogOrder = true
@@ -1145,7 +1145,11 @@ export default {
     // https://app.noest-dz.com/download/etiq/
     changeStateOrder(state){ 
         this.loadingBtn = true
-        Object.assign(this.orders[this.editedIndex], {...this.order, statut:state})
+        try{ 
+            Object.assign(this.orders[this.editedIndex], {...this.order, statut:state})
+        }catch (err){ 
+
+        }
         db.updateDocument('delivered', 'orders', this.order.$id,
                     {
                         statut:state,
