@@ -1006,10 +1006,11 @@ export default {
                     loopOrders = false
             })
         }
-        
-        this.orders.filter(doc => doc.statut == 'process').forEach(async item => { 
+
+        this.orders.filter(doc => doc.statut == 'process').slice(0, 9).forEach(async item => { 
             await this.editItem(item, false)
         })
+
         let nbProducts = 0
         let loopProducts = true
         while(loopProducts){ 
@@ -1047,14 +1048,14 @@ export default {
         }
     },
     newOrder(){ 
-     //   if(this.editedIndex != -1){ 
+        if(this.editedIndex != -1){ 
 
             this.order = {}
             this.globalProducts = []
             this.initial()
             this.modelAddress = []
             this.changeAddress(-1, {})
-     //   }
+        }
         this.editedIndex = -1
         this.readonly = false
         this.DialogOrder = true
