@@ -1000,16 +1000,16 @@ export default {
                         this.orders.push(...data.documents)
                     }
 
-                    data.documents.filter(doc => doc.statut == 'process').forEach(async item => { 
-                       await this.editItem(item, false)
-                    })
-
                     this.loading = false
             }).catch(() => { 
                     this.loading = false
                     loopOrders = false
             })
         }
+        
+        this.orders.filter(doc => doc.statut == 'process').forEach(async item => { 
+            await this.editItem(item, false)
+        })
         let nbProducts = 0
         let loopProducts = true
         while(loopProducts){ 
