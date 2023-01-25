@@ -47,14 +47,14 @@
 {"id":"46","livrasion": 800 ,"desk":350 ,"code":"46","text":"Ain Temouchent", "ar_text":"عين تموشنت", "longitude":"35.404044", "latitude":"-1.0580975"},
 {"id":"47","livrasion":1100  ,"desk": 500 ,"code":"47","text":"Ghardaia", "ar_text":"غرداية", "longitude":"32.5891743", "latitude":"3.7455655"},
 {"id":"48","livrasion":800  ,"desk": 350 ,"code":"48","text":"Relizane", "ar_text":"غليزان", "longitude":"35.8050195", "latitude":"0.867381"},
-{"id":"49","livrasion":1100   ,"desk":500   ,"code":"49","text":"El M'ghair", "ar_text":"المغير", "longitude":"33.947222", "latitude":"5.922222"},
-{"id":"50","livrasion":1100   ,"desk":500  ,"code":"50","text":"El Menia", "ar_text":"المنيعة", "longitude":"30.579167", "latitude":"2.879167"},
+{"id":"49","livrasion":1500  ,"desk":700  ,"code":"49","text":"Timimoun", "ar_text":"تيميمون", "longitude":"29.258333", "latitude":"0.230556"},
+{"id":"50","livrasion": 2000 ,"desk":1000  ,"code":"50","text":"Bordj Baji Mokhtar", "ar_text":"برج باجي مختار", "longitude":"21.327778", "latitude":"0.955556"},
 {"id":"51","livrasion":1000   ,"desk":500  ,"code":"51","text":"Ouled Djellal", "ar_text":"أولاد جلال", "longitude":"34.433333", "latitude":"5.066667"},
-{"id":"52","livrasion": 2000 ,"desk":1000  ,"code":"52","text":"Bordj Baji Mokhtar", "ar_text":"برج باجي مختار", "longitude":"21.327778", "latitude":"0.955556"},
-{"id":"53","livrasion":1200   ,"desk": 600  ,"code":"53","text":"Béni Abbès", "ar_text":"بني عباس", "longitude":"30.133333", "latitude":"-2.166667"},
-{"id":"54","livrasion":1500  ,"desk":700  ,"code":"54","text":"Timimoun", "ar_text":"تيميمون", "longitude":"29.258333", "latitude":"0.230556"},
+{"id":"52","livrasion":1200   ,"desk": 600  ,"code":"52","text":"Béni Abbès", "ar_text":"بني عباس", "longitude":"30.133333", "latitude":"-2.166667"},
+{"id":"53","livrasion":2000  ,"desk":1000  ,"code":"53","text":"In Salah", "ar_text":"عين صالح", "longitude":"27.197222", "latitude":"2.483333"},
+{"id":"54","livrasion":1000 ,"desk": 600,"code":"54","text":"In Guezzam", "ar_text":"عين قزام", "longitude":"19.572222", "latitude":"5.769444"},
 {"id":"55","livrasion":1100  ,"desk": 500 ,"code":"55","text":"Touggourt", "ar_text":"تقرت", "longitude":"33.108333", "latitude":"6.063889"},
 {"id":"56","livrasion":1000 ,"desk":600 ,"code":"56","text":"Djanet", "ar_text":"جانت", "longitude":"24.554167", "latitude":"9.484722"},
-{"id":"57","livrasion":2000  ,"desk":1000  ,"code":"57","text":"In Salah", "ar_text":"عين صالح", "longitude":"27.197222", "latitude":"2.483333"},
-{"id":"58","livrasion":1000 ,"desk": 600,"code":"58","text":"In Guezzam", "ar_text":"عين قزام", "longitude":"19.572222", "latitude":"5.769444"}
+{"id":"57","livrasion":1100   ,"desk":500   ,"code":"57","text":"El M'ghair", "ar_text":"المغير", "longitude":"33.947222", "latitude":"5.922222"},
+{"id":"58","livrasion":1100   ,"desk":500  ,"code":"58","text":"El Menia", "ar_text":"المنيعة", "longitude":"30.579167", "latitude":"2.879167"}
 ]
